@@ -62,6 +62,7 @@ High School graduate, West Springfield High School, West Springfield, Virginia
 -   Continued development, and optimization, of field data collection apps to record data taken in the field using ArcGIS Field Maps. Optimizations include using Arcade to streamline data collection in the field.
 
 
+
 ## **Links to Projects Completed**
 
 - [Carbon Sequestration and Storage: The Rice Rivers Center Tree Inventory](https://storymaps.arcgis.com/stories/6833d36f99c7437182164a909348665e)
