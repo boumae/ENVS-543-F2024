@@ -1,0 +1,47 @@
+---
+title: "ENVS Interests"
+author: "Eric Bouma"
+format: revealjs
+editor: visual
+---
+
+## **The Why?**
+
+Growing up as a kid I was always outdoors. This developed my love for nature, and coupled with an increased understanding of how our planet can be treated better, gave rise to my interest in environmental science.
+
+## **The What?**
+
+Some interests within environmental science includes:
+
+-Natural Resource Management
+
+-Forestry
+
+-Conservation
+
+-Remote Sensing
+
+-Imagery
+
+-GIS
+
+-GPS Technology
+
+## **Natural Resource Management**
+
+Natural resource management is a very important field for a healthy environment. Knowing that humans need resources to thrive and survive, but also acknowledging that resources must be aquired in a sustainable fashion to ensure future generations can survive, is what makes this an important field. This role is one that interests me because of how critical I believe it to be, by creating healthy and productive ecosystems that humans can still utilize, but treat with respect and long-term thought.
+
+## **NRM Image**
+
+![NRM](https://blog.economie-numerique.net/wp-content/uploads/2023/09/S411442597_g.jpg)
+
+## **Forestry**
+
+My internship at the Rice Center exposed me to a taste of some foresty via a tree inventory project. I quickly became hooked, and got good at identifying trees, thoroughly enjoying myself. Trees are important for a multitude of different reasons, ranging from carbon sequestration, to wildlife value, to silviculture. Forestry also is tied to natural resource management which is my main interest.
+
+## **GIS/GPS**
+
+On top of forestry, my internship at Rice also exposed me to both GIS and GPS technologies. GIS was used in the field for data collection via ArcGIS Field Maps, and outside of the field for data visualization. GPS (specifically Trimble R12 and Emlid Reach GPS units) was used to get highly accurate point locations of trees for the inventory.
+
+GIS/GPS meshes very well with natural resource management due to its spatial capabilities. To be able to effectively manage something you first must know what you are working with. Being able to visualize (GIS) accurately (GPS), in real space, the resources you are working with is a huge asset.
+

@@ -1,0 +1,68 @@
+---
+title: "**Eric Bouma**"
+subtitle: 'reddeltaXXX@gmail.com bouXXX@vcu.edu 703.963.XXXX'
+editor: visual
+date: 9-09-2024
+---
+
+## **Objective**
+
+To obtain a field-oriented position that allows me to utilize my technical field skills, data analysis skills, and project management skills, while also building upon these skills in a professional environment.
+
+## **General Skills**
+
+1.  Teamwork/group project skills
+
+2.  Customer service experience
+
+3.  Leadership/team building skills
+
+4.  Project management skills
+
+## **Technical Skills**
+
+-   Proficient use of Microsoft Excel for data management and analysis
+
+-   Proficient use of ESRI’s ArcGIS Online for spatial data analysis and visualization
+
+-   Entry level use of RStudio for data manipulation and visualization
+
+-   Proficient experience conducting tree and forest inventories in urban, suburban, and rural forest systems
+
+-   Intermediate plant identification skills
+
+-   Proficient in development, and use, of ArcGIS Field Maps data collection apps to collect field project data
+
+## **Education**
+
+2024-Present
+
+M.S. in Environmental Studies, Virginia Commonwealth University, Richmond, Virginia
+
+
+December 2022
+
+B.S. in Environmental Studies, Virginia Commonwealth University, Richmond, Virginia
+
+
+June, 2018
+
+High School graduate, West Springfield High School, West Springfield, Virginia
+
+## **Work Experience**
+
+**VCU Rice Rivers Center: 2023-Present**
+
+*Environmental Remote Sensing Technician*
+
+-   Field leader responsibilities in conducting complete tree and plant inventories.
+
+-   Assisted faculty with drone operations, using hyperspectral sensors, and field data collection, using a Trimble R12 GNSS Receiver with RTK, to detect for algal blooms (including harmful/toxic algal blooms) in the North Fork of the Shenandoah River.
+
+-   Continued development, and optimization, of field data collection apps to record data taken in the field using ArcGIS Field Maps. Optimizations include using Arcade to streamline data collection in the field.
+
+
+## **Links to Projects Completed**
+
+- [Carbon Sequestration and Storage: The Rice Rivers Center Tree Inventory](https://storymaps.arcgis.com/stories/6833d36f99c7437182164a909348665e)
+- [Urban Trees in Richmond Virginia](https://storymaps.arcgis.com/stories/3d47b56345134e5082426f80c264e9be)
