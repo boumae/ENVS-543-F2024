@@ -1,6 +1,6 @@
 ---
 title: "Data Types In Class Activity"
-author: "YOUR NAME HERE"
+author: "Eric Bouma"
 format: 
   html:
     code-tools: true
@@ -60,8 +60,8 @@ sqrOfNegative2
 
 "Wrong because of order of operations"
 
-sqrOfnegative2 <- (-2)^2
-sqrOfnegative2
+Correct_sqrOfnegative2 <- (-2)^2
+Correct_sqrOfnegative2
 ```
 
 ### Character Data
