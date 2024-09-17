@@ -79,7 +79,7 @@ We found a significant correlation between the variables (P = `r fit$p.value`)
 ## Data Frames
 
 ```{r}
-
+library(tidyverse)
 beetles <- read_csv(url)
 
 summary(beetles)
@@ -88,7 +88,10 @@ sites <- beetles$Stratum
 summary(sites)
 sites
 
+view(beetles)
 
+beetles[,1]
+beetles[1,2]
 ```
 ```{r}
 library(leaflet)

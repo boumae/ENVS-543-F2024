@@ -1,0 +1,111 @@
+---
+title: "Tidyverse"
+format: html
+editor: visual
+---
+
+
+```{r}
+url <- "https://docs.google.com/spreadsheets/d/1Mk1YGH9LqjF7drJE-td1G_JkdADOU0eMlrP01WFBT8s/pub?gid=0&single=true&output=csv"
+rice <- read_csv( url )
+names( rice )
+
+df <- rice[ c(1,3,5,13)]
+summary( df )
+```
+Select columns
+```{r}
+rice |>
+  select( DateTime ) -> df
+head( df )
+```
+Select several columns
+
+```{r}
+rice %>%
+  select( DateTime, AirTempF ) -> df 
+head(df)
+```
+Everything function
+
+```{r}
+rice |>
+  select( RecordID, ODO_mgl, PH, everything() ) -> df
+names( df )
+```
+Filter function
+```{r}
+range( rice$AirTempF )
+
+##filter below freezing
+rice |>
+  filter( AirTempF < 32 ) -> df
+range( df$AirTempF )
+
+#combo of filters. Can use a "," here instead of the "&", easier to read
+nrow( rice )
+
+rice |>
+  filter( AirTempF > 32, 
+          !is.na(PH), 
+          Turbidity_ntu < 15) -> df
+nrow(df)
+```
+Arrange
+```{r}
+rice$WindSpeed_mph[1]
+
+#arranged by a specific column
+rice |>
+  arrange( WindSpeed_mph ) -> df 
+df$WindSpeed_mph[1]
+
+#reverse arrange order
+rice |>
+  arrange( -WindSpeed_mph ) -> df 
+df$WindSpeed_mph[1]
+
+#arrange multiple 
+rice |>
+  arrange( -WindSpeed_mph, WindDir ) -> df
+```
+
+Mutations: The mutate() function creates new columns of data.
+```{r}
+class( rice$DateTime )
+#create new column
+library( lubridate )
+rice |>
+  mutate( Date = mdy_hms(DateTime, tz = "EST") ) -> df
+class( df$Date )
+
+summary( df$Date )
+
+#simultaneous mutations
+rice |>
+  mutate( Date = mdy_hms(DateTime, tz = "EST"), 
+          Month = month(Date, label = TRUE) ) -> df
+summary( df$Month )
+```
+
+Summarize
+```{r}
+#if using spaces, must use the "`" character. Na.rm = involves telling it what to do with missing data
+rice |>
+  summarize( `Air Temp` = mean( AirTempF), 
+             `Water Temp` = mean(H2O_TempC, na.rm=TRUE))
+```
+Group and summarize
+```{r}
+rice |>
+  mutate( Date = mdy_hms( DateTime, 
+                          tz="EST"),
+          Month = month( Date, 
+                         abbr = FALSE, 
+                         label=TRUE) ) |>
+  group_by( Month ) |>
+  summarize( `Air Temp` = mean( AirTempF), 
+             `Water Temp` = mean( H2O_TempC, 
+                                  na.rm=TRUE) ) 
+```
+
