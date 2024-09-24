@@ -107,5 +107,48 @@ rice |>
   summarize( `Air Temp` = mean( AirTempF), 
              `Water Temp` = mean( H2O_TempC, 
                                   na.rm=TRUE) ) 
+
+```
+
+Using kable
+```{r}
+
+##using kable
+library( knitr )
+
+df |>
+  kable()
+
+##options to kable
+df |>
+  kable( digits = 2, 
+         caption = "Air and water temperatures measured at the Rice Rivers Center.") -> kbl
+
+
+##basic styles 
+library( kableExtra )
+
+kbl |> 
+  kable_styling()
+
+#paper style
+kbl |> 
+  kable_paper()
+
+#classic style 
+kbl |> 
+  kable_classic( full_width = FALSE )
+
+#fancy material styles
+kbl |> 
+  kable_material( c("striped", "hover"), 
+                  full_width = FALSE )
+
+#Quoted Names & More Fancy Headings
+kbl |> 
+  kable_paper( full_width=FALSE) |>
+  add_header_above( c(" "=1, "Temperature (°C)" = 2))
+
+
 ```
 

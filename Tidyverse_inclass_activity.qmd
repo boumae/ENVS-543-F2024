@@ -1,0 +1,58 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+
+```{r}
+library(tidyverse)
+library( lubridate )
+library( knitr )
+
+url <- "https://docs.google.com/spreadsheets/d/1Mk1YGH9LqjF7drJE-td1G_JkdADOU0eMlrP01WFBT8s/pub?gid=0&single=true&output=csv"
+
+read_csv( url ) -> rice
+
+```
+
+
+
+
+
+```{r}
+names( rice )
+
+
+
+```
+
+
+
+```{r}
+# look at rice datset (pipe), create a new column (mutate), then calc new column, "-" removes old column w select
+
+rice |>
+  mutate( H20_Temp = 1.8 * H2O_TempC + 32 ) |>
+  
+  select( - H2O_TempC ) |>
+  
+  select( DateTime, H20_Temp, AirTempF, Rain_in ) |>
+  
+  mutate( Date = mdy_hms( DateTime, tz = "EST")) |>
+  
+  mutate( Weekday = wday( Date,
+                          label = TRUE, 
+                          abbr = FALSE )) |>
+  
+  group_by( Weekday ) |>
+  summarise( `Average Temp` = mean( H20_Temp, na.rm = TRUE),
+             `Average AirTemp` = mean( AirTempF ),
+             `Average Rainfall Inches` = mean( Rain_in)) |>
+  kable()
+  
+  
+
+
+```
+
