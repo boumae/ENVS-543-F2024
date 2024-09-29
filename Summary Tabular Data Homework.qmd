@@ -1,0 +1,20 @@
+---
+title: "Rice Rivers Center Tree Inventory"
+author: "Eric Bouma"
+format: html
+---
+
+**Abstract**
+The Rice Rivers Center (RRC) Tree Inventory is a dataset focused on tree species within the property of the center. This document contains the RRC Tree Inventroy dataset, along with code for data wrangling involving the addition of several new columns. The goal of this document is to highlight patterns within the RRC Tree Inventory.  
+```{r}
+
+read.csv( "TreeInv_DEM_extract_ExportTable.csv" ) -> rrc_ti
+```
+ **Introduction** 
+ Tree data was collected within a roughly 28 acre area of interest (AOI). Additionally, this dataset contains data on carbon and elevation metrics for each tree.
+ 
+ **Methods**
+ 
+ **Results**
+ 
+ 
