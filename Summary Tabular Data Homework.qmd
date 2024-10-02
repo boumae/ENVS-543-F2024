@@ -7,8 +7,6 @@ format: html
     #warning: false
     #message: false
     #error: false
-
-
 ---
 
 ## **Abstract**
