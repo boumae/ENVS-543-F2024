@@ -48,7 +48,7 @@ str( rrc_ti )
 
 ## **Methods**
 
-The methods for summarizing statistics involved four main comparisons; the numerical distribution trees species, amount of carbon stored by species, DBH by species, and DBH by elevation class. The functions mutate, count, summarize, group_by, and arrange were all used.
+The methods for summarizing statistics involved four main comparisons; the numerical distribution trees species, amount of carbon stored by species, DBH by species, and DBH by elevation class. The functions mutate, count, summarize, group_by, and arrange were all used to create tabular summaries.
 
 **Distribution of Species**
 
