@@ -2,19 +2,186 @@
 title: "Rice Rivers Center Tree Inventory"
 author: "Eric Bouma"
 format: html
+  #html:             #to turn code off globally
+    #echo: false
+    #warning: false
+    #message: false
+    #error: false
+
+
 ---
 
-**Abstract**
-The Rice Rivers Center (RRC) Tree Inventory is a dataset focused on tree species within the property of the center. This document contains the RRC Tree Inventroy dataset, along with code for data wrangling involving the addition of several new columns. The goal of this document is to highlight patterns within the RRC Tree Inventory.  
-```{r}
+## **Abstract**
+
+The Rice Rivers Center (RRC) Tree Inventory is a data set focused on tree species within the property of the center. This document contains the RRC Tree Inventory data set, along with code for data wrangling involving summary statistics for a few columns of data. The goal of this document is to highlight a few patterns within the RRC Tree Inventory.
+
+```{r, include = FALSE, echo = FALSE}
+#if want to only disable chunk
+# #| message: false
+# #| warning: false
+# #| echo: false
+
+
+#loading packages
+library(tidyverse)
+library( lubridate )
+library( dplyr)
+library( knitr )
+library( kableExtra )
+
+```
+
+```{r, include = FALSE, echo = FALSE}
+#Reading in the data
 
 read.csv( "TreeInv_DEM_extract_ExportTable.csv" ) -> rrc_ti
 ```
- **Introduction** 
- Tree data was collected within a roughly 28 acre area of interest (AOI). Additionally, this dataset contains data on carbon and elevation metrics for each tree.
- 
- **Methods**
- 
- **Results**
- 
- 
+
+## **Introduction**
+
+Tree data was collected within a roughly 28 acre area of interest (AOI) at the RRC. Tree data includes the common and scientific names, diameter at breast height (DBH), four letter ID code, and a unique alpha-numeric ID code for each tree. In addition to the tree data, this data set contains carbon and elevation metrics for each tree. Data types include numerical, categorical, and character.
+
+```{r, include = FALSE, echo = FALSE}
+#Looking at the structure of the data
+str( rrc_ti )
+```
+
+## **Methods**
+
+The methods for summarizing statistics involved four main comparisons; the numerical distribution trees species, amount of carbon stored by species, DBH by species, and DBH by elevation class. The functions mutate, count, summarize, group_by, and arrange were all used.
+
+**Distribution of Species**
+
+```{r}
+rrc_ti |> 
+  mutate( `Common Name` = Common_name) |>
+  count( `Common Name`,
+         sort = TRUE,
+         name = "Species Distribution")
+
+```
+
+**Amount of Carbon Stored by Species**
+
+```{r}
+
+rrc_ti |>
+   mutate( `Common Name` = Common_name) |>
+  group_by( `Common Name` ) |>
+  summarize( `Avg Carbon Stored (Kg)` = mean( Carbon_Stored ),
+             `Total Carbon Stored (Kg)` = sum( Carbon_Stored)) |>
+  arrange( - `Avg Carbon Stored (Kg)`,
+           - `Total Carbon Stored (Kg)`)
+```
+
+**DBH by Species**
+
+```{r}
+
+rrc_ti |>
+  mutate( `Common Name` = Common_name) |>
+  group_by( `Common Name`) |>
+  summarize( `Avg DBH (cm)` = mean( DBH ),
+             `Max DBH (cm)` = max( DBH )) |>
+  arrange( - `Avg DBH (cm)`,
+           - `Max DBH (cm)`)
+```
+
+**DBH by Elevation Type**
+
+```{r}
+rrc_ti |>
+   mutate( `Elevation` = DEM_POINTS) |>
+  group_by( Elevation ) |>
+  summarize( `Avg DBH (cm)` = mean( DBH ),
+             `Max DBH (cm)` = max( DBH )) |>
+  arrange( - `Avg DBH (cm)`)
+  
+```
+
+## **Results**
+
+**Distribution of Species**
+
+```{r}
+rrc_ti |> 
+  mutate( `Common Name` = Common_name) |>
+  count( `Common Name`,
+         sort = TRUE,
+         name = "Species Distribution") -> table1 
+  
+table1 |>
+  kable( digits = 0,
+         caption = "Number of Trees per Species") -> kbl1
+
+kbl1 |>
+   kable_classic( full_width = FALSE,
+                 lightable_options = "striped") |>
+  row_spec( 0, bold = TRUE)
+
+```
+
+**Amount of Carbon Stored by Species**
+
+```{r}
+
+rrc_ti |>
+  mutate( `Common Name` = Common_name) |>
+  group_by( `Common Name` ) |>
+  summarize( `Avg Carbon Stored (Kg)` = mean( Carbon_Stored ),
+             `Total Carbon Stored (Kg)` = sum( Carbon_Stored)) |>
+  arrange( - `Avg Carbon Stored (Kg)`,
+           - `Total Carbon Stored (Kg)`) -> table2
+
+table2 |>
+  kable( digits = 2,
+         caption = "Kg of Carbon Stored by Species") -> kbl2
+
+kbl2 |>
+  kable_classic( full_width = FALSE,
+                 lightable_options = "striped") |>
+  row_spec( 0, bold = TRUE)
+```
+
+**DBH by Species**
+
+```{r}
+
+rrc_ti |>
+  mutate( `Common Name` = Common_name) |>
+  group_by( `Common Name`) |>
+  summarize( `Avg DBH (cm)` = mean( DBH ),
+             `Max DBH (cm)` = max( DBH )) |>
+  arrange( - `Avg DBH (cm)`,
+           - `Max DBH (cm)`) -> table3
+
+table3 |>
+  kable( digits = 2,
+         caption = "DBH by Species") -> kbl3
+
+kbl3 |>
+   kable_classic( full_width = FALSE,
+                 lightable_options = "striped") |>
+  row_spec( 0, bold = TRUE)
+```
+
+**DBH by Elevation Type**
+
+```{r}
+
+rrc_ti |>
+  mutate( `Elevation` = DEM_POINTS) |>
+  group_by( Elevation ) |>
+  summarize( `Avg DBH (cm)` = mean( DBH ),
+             `Max DBH (cm)` = max( DBH )) |>
+  arrange( - `Avg DBH (cm)`) -> table4
+
+table4 |>
+  kable( digits = 2,
+         caption = "DBH by Elevation") -> kbl4
+
+kbl4 |>
+  kable_classic( full_width = FALSE,
+                 lightable_options = "striped") |>
+  row_spec( 0, bold = TRUE)
+```
