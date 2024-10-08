@@ -1,0 +1,35 @@
+---
+title: "Graphics Assignment"
+format: html
+editor: visual
+---
+You can decide how to display the data based upon what you believe is the most informative for the consumer of your graphics (e.g., me in this case).
+
+-Total Rain for Each Weekday in January.  
+-Average daily temperature for weekdays in February.
+-Water depth on Valentine's Day.
+-Scatter plot of Daily Total Rain and Daily Median Temperature grouped by month (label the centroid of months).
+-Wind Direction during the week containing the 8th of January.
+
+Bringing in data set using our function
+```{r}
+source("getRiceData.R")
+rice <- getRiceData()
+```
+
+Total Rain for each Weekday in January
+```{r}
+
+rice |>
+  group_by( Weekday ) |>
+  filter( Month == "January") |>
+  summarize( Rain = sum(Rainfall_cm)) -> Q1
+
+  Q1 |>
+    ggplot( aes(Weekday,Rain)) + geom_col()
+  
+barplot( Q1$Rain, names.arg = Q1$Weekday, ylab = "Rainfall")
+
+
+```
+
