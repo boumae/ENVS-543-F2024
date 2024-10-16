@@ -34,7 +34,7 @@ rice |>
                           abbr = FALSE,
                           label = TRUE,
                           week_start = getOption("lubridate.week.start", 7))) |>
-  mutate( Day = day( Date)) -> rice
+  mutate( Day = yday( Date)) -> rice
 
 view(rice)
 

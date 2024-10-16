@@ -1,23 +1,28 @@
 ---
 title: "Graphics Assignment"
 format: html
-editor: visual
+date: 10-15-24
+author: "Eric Bouma"
 ---
-You can decide how to display the data based upon what you believe is the most informative for the consumer of your graphics (e.g., me in this case).
+# **Abstract**
 
--Total Rain for Each Weekday in January.  
--Average daily temperature for weekdays in February.
--Water depth on Valentine's Day.
--Scatter plot of Daily Total Rain and Daily Median Temperature grouped by month (label the centroid of months).
--Wind Direction during the week containing the 8th of January.
+The goal of this document is to demonstrate the ability to use graphics for data visualizations. This includes using both ggplot and the base R functionality. Areas of interest include; rainfall amounts, average and median temperature, water depth, and wind direction. 
 
-Bringing in data set using our function
-```{r}
+
+
+
+```{r, echo = FALSE, include = FALSE} 
+#Bringing in data set using our function
+
 source("getRiceData.R")
 rice <- getRiceData()
+
+library(tidyverse)
 ```
 
-Total Rain for each Weekday in January
+# **Graphs**
+
+### **Total Rain for Each Weekday in January (GGplot)**
 ```{r}
 
 rice |>
@@ -26,10 +31,169 @@ rice |>
   summarize( Rain = sum(Rainfall_cm)) -> Q1
 
   Q1 |>
-    ggplot( aes(Weekday,Rain)) + geom_col()
+    ggplot( aes(Weekday,Rain)) + 
+    labs ( title = "Total Rain for each Weekday in January",
+           x = "Weekday",
+           y = "Rainfall (cm)") + 
+    theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5)) +
+    geom_col()
   
-barplot( Q1$Rain, names.arg = Q1$Weekday, ylab = "Rainfall")
+```
 
+### **Total Rain for Each Weekday in January (Base)**
+```{r}
+
+barplot( Q1$Rain, names.arg = Q1$Weekday, ylab = "Rainfall (cm)",
+         main = "Total Rain for each Weekday in January",
+      xlab = "Weekday",
+      cex.names = 0.8)
+
+```
+
+### **Average Daily Temperature for Weekdays in February (GGplot)**
+```{r}
+rice |>
+  group_by( Weekday ) |>
+  filter( Month == "February") |>
+  summarize( Temperature = mean(AirTempC)) -> Q2
+
+Q2 |>
+  ggplot( aes( Weekday, Temperature)) +
+  labs ( title = "Average Daily Temperature for Weekdays in February",
+           x = "Weekday",
+           y = "Temperature (°C)") + 
+    theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5)) +
+  
+  geom_col()
+
+```
+
+### **Average Daily Temperature for Weekdays in February (Base)**
+```{r}
+
+barplot( Q2$Temperature, names.arg = Q2$Weekday, ylab = "Temperature (°C)",
+         main = "Average Daily Temperature for Weekdays in February",
+      xlab = "Weekday",
+      cex.names = 0.8)
+```
+
+### **Water Depth on Valentine's Day (GGplot)**
+```{r}
+rice |>
+  group_by( Date ) |>
+  filter( Month == "February" & Day == "45") |>
+  summarize( WaterDepth = Depth_m) -> Q3
+
+Q3 |>
+  ggplot( aes( Date, 
+               WaterDepth)) + 
+  labs ( title = "Water Depth on Valentine's Day",
+           x = "Time",
+           y = "Water Depth (m)") + 
+    theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5)) +
+  
+  geom_col( col = "black",
+            fill = "blue")
+```
+
+### **Water Depth on Valentine's Day (Base)**
+```{r}
+
+barplot( Q3$WaterDepth, names.arg = Q2$Date,
+         main = "Water Depth on Valentine's Day",
+         ylab = "Water Depth (m)", 
+         xlab = "Feb 14th 00:00-24:00 UTC",
+         col = "blue")
+```
+
+### **Scatter Plot of Daily Total Rain and Daily Median Temperature by Month (GGplot)**
+```{r}
+
+rice |>
+  mutate( Date2 = as.Date( Date )) |>
+  
+  group_by( `Date2` ) |>
+  summarize( `Daily Total Rain` = mean( Rainfall_cm),
+             `Daily Median Temperature` = median( AirTempC)) |>
+  mutate( Month = month( Date2,
+                         abbr = FALSE,
+                         label = TRUE)) -> Q4
+
+  ggplot( Q4, aes( x = `Daily Total Rain`,
+                   y = `Daily Median Temperature`,
+                   color = Month)) +
+    labs ( title = "Daily Total Rain and Daily Median Temperature by Month",
+           x = "Daily Total Rain (cm)",
+           y = "Daily Median Temperature (°C)") +
+    theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5)) +
+  geom_point()
+
+```
+
+### **Scatter Plot of Daily Total Rain and Daily Median Temperature by Month (Base)**
+```{r}
+
+plot( Q4$`Daily Total Rain`, Q4$`Daily Median Temperature`,
+      main = "Daily Total Rain and Daily Median Temperature by Month",
+      xlab = "Daily Total Rain (cm)",
+      ylab = "Daily Median Temperature (°C)",
+      pch = 19,
+      col = Q4$Month)
+
+#how to get a legend here?
+
+
+```
+
+### **Wind Direction During the Week of January the 8th (GGplot)**
+```{r}
+
+rice |>
+  mutate( Date2 = as.Date( Date )) |>
+  filter( Date2 >= "2014-01-05" & Date2 <= "2014-01-11" ) |>
+   group_by( `Date2` ) |>
+  summarize( `Average Wind Direction` = mean( WindDir),
+             `Average Wind Speed` = mean( WindSpeed_kmh)) |>
+   mutate( Rad = `Average Wind Direction` * (pi/180)) -> Q5
+
+ggplot( Q5, aes( x = `Date2`,
+                 y = `Average Wind Speed`)) +
+  geom_segment( aes( xend = Date2 + 0.1,
+                     yend = `Average Wind Speed` + sin(Rad) * `Average Wind Speed`),
+                arrow = arrow( length = unit(0.2, "inches")),
+                color = "blue",
+                size = 0.5,
+                alpha = 0.5) +
+  labs(title = "Average Wind Direction by Date",
+       x = "Date",
+       y = "Average Wind Speed (kmh)") + 
+scale_x_date(breaks = Q5$Date2, date_labels = "%m-%d-%Y") +
+  theme_minimal()  +  
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
+
+
+```
+
+
+### **Wind Direction During the Week of January the 8th (Base)**
+```{r}
+
+max_wind_speed <- max(Q5$`Average Wind Speed`)
+max_arrow_length <- max_wind_speed + max(sin(Q5$Rad) * Q5$`Average Wind Speed`)
+
+plot( Q5$Date2, Q5$`Average Wind Speed`,
+      type = "n",
+      xlab = "Date",
+      ylab = "Average Wind Speed (kmh)",
+      main = "Average Wind Direction by Date",
+      ylim = c(0, max_arrow_length + 2)) +
+  arrows( Q5$Date2, Q5$`Average Wind Speed`,
+          Q5$Date2 +0.1,
+          Q5$`Average Wind Speed` + sin(Q5$Rad) * Q5$`Average Wind Speed`,
+          length = 0.2,
+          angle = 15,
+          col = "blue")
 
 ```
 

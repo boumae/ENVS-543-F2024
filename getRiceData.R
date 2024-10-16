@@ -29,7 +29,7 @@ getRiceData <- function(){
     mutate( Weekday = wday( Date,
                             abbr = FALSE,
                             label = TRUE)) |>
-    mutate( Day = day( Date)) -> rice
+    mutate( Day = yday( Date)) -> rice
   
   #view(rice)
   
@@ -90,4 +90,5 @@ getRiceData <- function(){
   return( rice )
   
 }
+
 
