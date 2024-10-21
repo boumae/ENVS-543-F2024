@@ -105,23 +105,65 @@ For these questions, you may want to look at the `sf` cheat sheet [here](https:/
 
 ```{r}
 
-data |>
-  filter( Site == "const" & "sfran") -> Q1
+data |> 
+  filter(Site %in% c("const", "sfran")) -> Q1
+
+st_distance(Q1[1,], Q1[2,])
+
+distance_kilometers <- st_distance(Q1[1,], Q1[2,]) / 1000
 
 ```
 
 
 2. Is there a correlation between habitat suitability and the ratio of males to female beetles sampled at each locale?  
+```{r}
+
+result <- cor.test(data$Suitability, data$MFRatio)
+
+
+print(result)
+
+```
+
+```{r}
+   ggplot( data, aes( Suitability,
+                      MFRatio)) +
+      labs ( title = "Correlation Between Habitat Suitability and the Ratio of Males to Female Beetles",
+             x = "Habitat Suitability",
+             y = "Ratio of Males to Female") +
+    stat_smooth( formula = y ~ x,
+               method = "lm",
+               alpha = 1) +
+  geom_point( col = "red")
+```
 
 3. Make a plot using `ggplot` of the data with suitability as the size of the points and the sex ratio as the fill color.
 
+```{r}
+
+ggplot( data, aes(color= MFRatio,
+                  size = Suitability) ) + 
+  geom_sf( )
+```
+
 4. Reproject the data and plot it again using an EPSG code defined for Mexico UTM zone 12N (see [epgs.io](https://epsg.io) for projections).
 
+```{r}
+data |>
+  st_transform( 6367 ) -> mexico12n
+
+  #st_bbox( mexico12n )
+  
+  ggplot( mexico12n, aes(color= MFRatio,
+                  size = Suitability) ) + 
+  geom_sf( )
+```
 
 
 ```{r}
 #| echo: false
 cor.response <- cor.test( iris$Petal.Length, iris$Sepal.Width)
+
 ```
 
 

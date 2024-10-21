@@ -1,0 +1,69 @@
+---
+title: "Factors In-Class Activity"
+author: "Eric Bouma"
+format: html
+editor: visual
+---
+
+Using the forcats library, use your Rice Center Data function to add these changes.
+
+Change the order of the weekdays to start with Monday.
+Add two additional factor columns:
+Weekday/Weekend based on the day of the week.
+Create a column based on the *four primary lunar phases* for the data collected.
+[Superstar Question] Create a column that indicates whether the tide is coming in (Incoming) or going out (Outgoing).
+
+
+
+```{r, echo = FALSE, include = FALSE}
+
+#Bringing in data set using our function
+
+source("getRiceData.R")
+rice <- getRiceData()
+```
+
+
+Change the order of the weekdays to start with Monday.
+```{r}
+rice |>
+mutate(Weekday = fct_recode(Weekday,
+                               "Monday" = "Sunday",
+                               "Tuesday" = "Monday",
+                               "Wednesday" = "Tuesday",
+                               "Thursday" = "Wednesday",
+                               "Friday" = "Thursday",
+                               "Saturday" = "Friday",
+                               "Sunday" = "Saturday")) |>
+  mutate(Weekday = fct_relevel(Weekday,
+                                "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")) -> rice
+
+levels(rice$Weekday)
+```
+
+Weekday/Weekend based on the day of the week.
+```{r}
+rice |>
+  mutate( `Weekend/Weekday` = fct_lump(Weekday,
+                                     n = 2,
+                                     other = "weekend")) -> rice
+    rice$`Weekend/Weekday` <- fct_recode( rice$`Weekend/Weekday`,
+                           "weekend" = "Sunday",
+                           "weekend" = "Saturday",
+                           "weekday" = "Monday",
+                           "weekday" = "Tuesday",
+                           "weekday" = "Wednesday",
+                           "weekday" = "Thursday",
+                           "weekday" = "Friday")
+```
+
+Create a column based on the *four primary lunar phases* for the data collected
+```{r}
+#lunar package
+```
+
+Create a column that indicates whether the tide is coming in (Incoming) or going out (Outgoing)
+```{r}
+
+```
+
