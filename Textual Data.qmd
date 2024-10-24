@@ -1,0 +1,217 @@
+---
+title: "Textual Analysis"
+author: "Eric Bouma"
+format: html
+editor: visual
+---
+
+## Textual Data
+
+```{r}
+library(tidyverse)
+library(readr)
+library(stringr)
+```
+
+
+```{r}
+
+w <- "'Coding is fun!' said Dyer."
+x <- "Eric"
+y <- 'Bouma'
+z <- 'Bob Marley once said, "It is a foolish dog who barks at a passing bird."'
+
+
+w
+x
+y
+z
+
+
+print(z) #uses "/"
+cat(z) #prints exactly
+
+```
+
+
+## Creating Text Variables
+
+```{r}
+paste( "Bob", "is", "not", "here")
+paste( "Bob", "is", "not", "here", sep = ",")
+
+paste("My favorite number is", 42, "!")
+
+
+```
+
+```{r}
+length(z)
+nchar(z)
+str_length(z)
+
+
+```
+
+```{r}
+
+vec <- c(w,x,y,z)
+vec
+length(vec)
+str_length(vec)
+
+```
+
+```{r}
+
+a <- 1:10
+
+ paste(a)
+ paste( a, collapse = ",")
+
+ b <- LETTERS[1:10]
+b
+
+paste( a,b, sep = "-" )
+paste( a,b, collapse = "x" )
+
+```
+
+```{r}
+
+str_c(a,b)
+
+
+```
+## Finding in Strings
+
+```{r}
+
+str_detect( z, "Marley")
+str_detect( z, "marley")
+str_detect( vec, "Dyer")
+
+
+```
+```{r}
+
+str_count( z, "a")
+str_count( vec, "Dyer")
+
+```
+```{r}
+
+str_locate( z, "dog")
+str_locate( vec, "a")
+str_locate_all( vec, "a")
+
+```
+```{r}
+
+str_sub(z, 24,-2)
+
+c <- z
+str_sub(c,24,-2) <- "hey"
+c
+
+
+```
+## Deleting
+
+```{r}
+str_remove(z, "dog")
+str_remove_all(z, "a")
+```
+```{r}
+str_trunc(z, 23)
+str_sub( z, 23,25) #finding which character
+```
+
+```{r}
+str_to_lower( z )
+str_to_upper( z )
+str_to_sentence( z )
+str_to_title( z )
+```
+
+
+
+## Regular Expression
+
+- Make a graphical display of the number of courses in ENVS by course level 100, 200 etc
+
+- Make a word cloud from the titles
+
+
+
+```{r}
+
+url <- "https://raw.githubusercontent.com/DyerlabTeaching/Textual-Data/refs/heads/main/data/ENVSclasses.txt?token=GHSAT0AAAAAACWO27UIA46V72P7DBZEP5EKZYZFFXQ"
+
+envs <- read_lines( url )
+head(envs, 25)
+```
+```{r}
+str_detect( envs, "ENVS") -> idx
+
+envs[ idx ]
+```
+```{r}
+
+envs101 <- envs[1]
+envs101
+
+
+```
+
+```{r}
+str_view( envs101, "ENVS")
+str_view( envs101, "Hour")
+str_view( envs101, "o")
+
+str_view(envs101, "[:digit:]")
+str_view(envs101, "[:digit:]{3}") #looks for only 3 digits
+str_view(envs101, "[:digit:]{2,3}") #2 or 3 
+
+
+```
+```{r}
+
+str_view( envs101, "[:punct:]") #punctuation search
+```
+```{r}
+str_view( envs101, "[:alpha:]") #letter search
+```
+
+```{r}
+str_view( envs101, "[:lower:]") #lowercase letters
+```
+```{r}
+str_view( envs101, "[:upper:]") #uppercase letters
+```
+```{r}
+str_view( envs101, "[:space:]") #spaces
+```
+```{r}
+str_view( envs101, "[:alpha:]{4} [:digit:]{3}")
+str_view( envs101, "[:upper:]{4} [:digit:]{3}") 
+str_view( envs101, "[:lower:]{4} [:digit:]{3}")#when nothing is found no output
+```
+
+```{r}
+str_view( envs101, "[A-Z]{4} [0-9]{3}")
+```
+```{r}
+str_view(envs101, "^[A-Z]{4} [0-9]{3}") #^ anchors the search at the front of the sentence
+str_view(envs101, "[0-9] Hour |s.$") #$ anchors the search at the end, "|" matches for hour or hours
+```
+
+```{r}
+
+str_view(envs101, "^[A-Z]{4} [0-9]{3}.+ [0-9] Hours.$") #look at cheat sheet for what period does
+
+
+```
+
+
+
