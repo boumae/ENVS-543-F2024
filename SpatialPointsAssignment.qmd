@@ -1,5 +1,5 @@
 ---
-title: "In Class Activity"
+title: "Spatial Data Assignment"
 format: 
   html:
     code-tools: true
@@ -43,7 +43,7 @@ if( length( need_inst ) ) {
 }
 ```
 ## Read Packages
-```{r}
+```{r, message=FALSE}
 library( tidyverse )
 library( lubridate )
 library( dplyr )
@@ -57,7 +57,7 @@ library( kableExtra )
 
 The data for this is some site-level data from the Sonoran Desert bark beetle.  The URL is in the next chunk, and is currently being hosted on my class [Github repository](https://github.com/dyerlab/ENVS-Lectures).  Load it in.
 
-```{r}
+```{r, message=FALSE}
 url <- "https://raw.githubusercontent.com/dyerlab/ENVS-Lectures/master/data/Araptus_Disperal_Bias.csv"
 
 read_csv( url ) -> data
@@ -85,10 +85,11 @@ data |>
 Convert the spatial data in the beetle data.frame into an `sf` object.  Make sure you set the Coordinate Reference System to $4326$.
 
 
-```{r}
+```{r, message=FALSE}
 
 library( sf )
-data %>%
+
+data |>
   st_as_sf( coords=c("Longitude","Latitude"),
             crs = 4326 ) -> data
 
@@ -112,11 +113,13 @@ st_distance(Q1[1,], Q1[2,])
 
 distance_kilometers <- st_distance(Q1[1,], Q1[2,]) / 1000
 
+print(distance_kilometers)
+
 ```
 
 
 2. Is there a correlation between habitat suitability and the ratio of males to female beetles sampled at each locale?  
-```{r}
+```{r, message=FALSE}
 
 result <- cor.test(data$Suitability, data$MFRatio)
 
@@ -124,6 +127,8 @@ result <- cor.test(data$Suitability, data$MFRatio)
 print(result)
 
 ```
+
+We found a significant relationship between habitat suitability and the ratio of males to female beetles (Pearson Correlation, $\rho$ = `r result$p.value`).
 
 ```{r}
    ggplot( data, aes( Suitability,
@@ -143,31 +148,53 @@ print(result)
 
 ggplot( data, aes(color= MFRatio,
                   size = Suitability) ) + 
-  geom_sf( )
+  geom_sf( ) + 
+  labs ( title = "Habitat Suitability and Male to Female Ratio",
+         x = "Longitude",
+         y = "Latitude")
 ```
 
 4. Reproject the data and plot it again using an EPSG code defined for Mexico UTM zone 12N (see [epgs.io](https://epsg.io) for projections).
 
 ```{r}
-data |>
-  st_transform( 6367 ) -> mexico12n
 
+data |>
+  st_as_sf( coords=c("Longitude","Latitude"),
+            crs = 6367 ) -> mexico12n
   #st_bbox( mexico12n )
+
+map_data("world") |>
+  filter( region == "Mexico") -> map
+#head( map )
+
+ggplot( ) + 
+  geom_polygon( aes( x=long, 
+                     y=lat, 
+                     group=group ), 
+                data=map, 
+                fill="grey" ) + 
+  geom_sf( data=mexico12n, 
+          aes(color = MFRatio, size = Suitability),
+          show.legend = TRUE) +
+  labs (title = "Habitat Suitability and Male to Female Ratio",
+        x = "Longitude",
+        y = "Latitude") + 
+  theme_bw( base_size = 12 ) +
+  coord_sf( xlim = c(-115, -105),
+            ylim = c(22, 30) )
   
-  ggplot( mexico12n, aes(color= MFRatio,
-                  size = Suitability) ) + 
-  geom_sf( )
+
 ```
 
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 #| echo: false
 cor.response <- cor.test( iris$Petal.Length, iris$Sepal.Width)
 
 ```
 
 
-We failed to find a significant relationship between sepal length and width (Pearson Correlation, $\rho$ = `r cor.response$estimate`, P = `r cor.response$p.value`).
+
 
 
 

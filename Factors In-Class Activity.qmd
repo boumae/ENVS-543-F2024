@@ -5,15 +5,19 @@ format: html
 editor: visual
 ---
 
-Using the forcats library, use your Rice Center Data function to add these changes.
+## **Task**
 
-Change the order of the weekdays to start with Monday.
-Add two additional factor columns:
-Weekday/Weekend based on the day of the week.
-Create a column based on the *four primary lunar phases* for the data collected.
-[Superstar Question] Create a column that indicates whether the tide is coming in (Incoming) or going out (Outgoing).
+Using the forcats library, use your Rice Center Data function to add these changes:
 
+-   Change the order of the weekdays to start with Monday.
 
+-   Add two additional factor columns:
+
+-   Weekday/Weekend based on the day of the week.
+
+-   Create a column based on the *four primary lunar phases* for the data collected.
+
+-   \[Superstar Question\] Create a column that indicates whether the tide is coming in (Incoming) or going out (Outgoing).
 
 ```{r, echo = FALSE, include = FALSE}
 
@@ -23,8 +27,19 @@ source("getRiceData.R")
 rice <- getRiceData()
 ```
 
+## **Loading Packages**
 
-Change the order of the weekdays to start with Monday.
+```{r, message=FALSE}
+#loading packages
+library(tidyverse)
+library( lubridate )
+library( dplyr)
+library( knitr )
+library( kableExtra )
+```
+
+## **Change the Order of the Weekdays to Start With Monday.**
+
 ```{r}
 rice |>
 mutate(Weekday = fct_recode(Weekday,
@@ -41,29 +56,109 @@ mutate(Weekday = fct_recode(Weekday,
 levels(rice$Weekday)
 ```
 
-Weekday/Weekend based on the day of the week.
+## **Weekday/Weekend Based on the Day of the Week.**
+
 ```{r}
+
 rice |>
-  mutate( `Weekend/Weekday` = fct_lump(Weekday,
-                                     n = 2,
-                                     other = "weekend")) -> rice
-    rice$`Weekend/Weekday` <- fct_recode( rice$`Weekend/Weekday`,
-                           "weekend" = "Sunday",
-                           "weekend" = "Saturday",
-                           "weekday" = "Monday",
-                           "weekday" = "Tuesday",
-                           "weekday" = "Wednesday",
-                           "weekday" = "Thursday",
-                           "weekday" = "Friday")
+  mutate(`Weekend/Weekday` = fct_recode(Weekday,
+    Weekend = "Saturday",
+    Weekend = "Sunday",
+    Weekday = "Monday",
+    Weekday = "Tuesday",
+    Weekday = "Wednesday",
+    Weekday = "Thursday",
+    Weekday = "Friday"
+  )) -> rice
+    
+rice |>
+  mutate( NewDate = as.Date(Date)) -> rice
+
+    rice |>
+      select( NewDate,
+              Weekday,
+              `Weekend/Weekday`) |>
+      group_by(NewDate) |>
+      summarize( NewDate = mean(NewDate),
+                 Weekday = first(Weekday),
+                 `Weekend/Weekday` = first(`Weekend/Weekday`))-> Q2
+    Q2 |>
+  kable( digits = 2,
+         caption = "<b>Weekend or Weekday?</b>") -> kbl2
+
+kbl2 |>
+  kable_classic( full_width = FALSE,
+                 lightable_options = "striped") |>
+  row_spec(0, bold = TRUE)
+    
 ```
 
-Create a column based on the *four primary lunar phases* for the data collected
+## **Four Primary Lunar Phases**
+
 ```{r}
 #lunar package
+library(lunar)
+
+rice |>
+  mutate( LunarPhases = lunar.phase(NewDate,
+                                    name = 4)) -> rice
+
+rice |>
+      select( NewDate,
+              LunarPhases,
+              Month) |>
+      group_by(NewDate) |>
+      summarize( NewDate = mean(NewDate),
+                 LunarPhases = first(LunarPhases),
+                 Month = first( Month ))-> Q3
+
+Q3 |>
+  ggplot( aes( x = NewDate,
+               fill = LunarPhases)) +
+  labs( title = "Lunar Phases Over Time",
+           x = "Day",
+           y = "One Lunar Phase per Day",
+           fill = "Lunar Phases") +
+  geom_bar() + 
+  theme_classic()
 ```
 
-Create a column that indicates whether the tide is coming in (Incoming) or going out (Outgoing)
+## **Tide Incoming vs Outgoing**
+
 ```{r}
 
-```
+rice |>
+  summarise( Min = min(Depth_m, na.rm = T),
+             Max = max(Depth_m, na.rm = T)) -> avgs
+#print(avgs)
 
+rice |>
+  select(Depth_m,
+         LunarPhases,
+         Date) -> Q4
+
+rice |>
+  mutate( TidalDirection = case_when(
+    Depth_m > lag(Depth_m) ~ "Incoming",
+    Depth_m < lag(Depth_m) ~ "Outgoing",
+    TRUE ~ "Stable"
+  )) -> rice
+
+rice |>
+  select(Depth_m,
+         TidalDirection,
+         Date,
+         Month) -> Q5
+  Q5 |>
+  filter( Date >= "2014-02-01 00:00:00",
+          Date <= "2014-02-07 23:45:00") -> Q5
+Q5 |>
+  ggplot( aes( x = Date,
+               y = Depth_m,
+               color = TidalDirection)) + 
+  geom_point() +
+  labs( title = "Tidal Direction and Water Depth by Date",
+        x = "Date",
+        y = "Water Depth (m)",
+        color = "Tidal Direction")
+```
