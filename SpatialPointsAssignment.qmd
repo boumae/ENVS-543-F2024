@@ -133,9 +133,9 @@ We found a significant relationship between habitat suitability and the ratio of
 ```{r}
    ggplot( data, aes( Suitability,
                       MFRatio)) +
-      labs ( title = "Correlation Between Habitat Suitability and the Ratio of Males to Female Beetles",
+      labs ( title = "Correlation Between Habitat Suitability and the Ratio of Male to Female Beetles",
              x = "Habitat Suitability",
-             y = "Ratio of Males to Female") +
+             y = "Ratio of Male to Female") +
     stat_smooth( formula = y ~ x,
                method = "lm",
                alpha = 1) +
