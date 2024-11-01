@@ -76,7 +76,7 @@ Q2baja_crop |>
             Elevation=alt_22)  -> Q2baja_crop.df
 ```
 
-```{r}
+```{r, message=FALSE}
 #reproject
 
 new.proj <- "+proj=utm +zone=12 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs "
@@ -141,7 +141,7 @@ ggplot(Q3,
 ```
 
 ## **4.Relationship Between Sex Ratio and Elevation by Site**
-```{r}
+```{r, message = FALSE}
 
 baja_crop |>
   rasterToPoints() |>
@@ -155,7 +155,7 @@ baja_crop.df |>
   ggplot() +
   geom_raster( aes( x = Longitude,
                     y = Latitude,
-                    fill = Elevation)) + 
+                    fill = Elevation)) +
   coord_equal() +
   theme_minimal() + 
   scale_fill_gradientn( colors = terrain.colors(100)) +
