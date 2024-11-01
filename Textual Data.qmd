@@ -208,10 +208,37 @@ str_view(envs101, "[0-9] Hour |s.$") #$ anchors the search at the end, "|" match
 
 ```{r}
 
-str_view(envs101, "^[A-Z]{4} [0-9]{3}.+ [0-9] Hours.$") #look at cheat sheet for what period does
+str_view(envs101, "^[A-Z]{4} [0-9]{3}.+ [0-9] Hour[s]?\\.$") #look at cheat sheet for what period does
 
 
 ```
 
+```{r}
 
+pattern <- "^[A-Z]{4} [0-9]{3}.+ [0-9] Hour[s]?\\.$"
+
+grepl (pattern, envs) -> idx
+
+titles <- envs[idx]
+titles
+
+```
+
+```{r}
+str_split( titles, pattern = "\\.")
+str_split( titles, pattern = "\\.",
+           simplify = TRUE) -> raw
+raw
+
+data.frame ( Course = raw[,1],
+                     Title = str_trim(raw[,2]),
+                     Hours = str_trim(raw[,3])) |>
+  mutate( Hours = str_remove( Hours, " Hour")) |>
+  mutate( Hours = str_remove( Hours, "s"))  |>
+  mutate( Program = str_split( Course, " ", simplify = TRUE)[,1]) |>
+  mutate( Number = as.numeric (str_split( Course, " ", simplify = TRUE)[,2])) |>
+  select( Program, Number, Title, Hours)
+  
+
+```
 
