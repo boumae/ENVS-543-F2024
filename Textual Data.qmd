@@ -155,6 +155,7 @@ head(envs, 25)
 str_detect( envs, "ENVS") -> idx
 
 envs[ idx ]
+
 ```
 ```{r}
 
@@ -226,6 +227,7 @@ titles
 
 ```{r}
 str_split( titles, pattern = "\\.")
+
 str_split( titles, pattern = "\\.",
            simplify = TRUE) -> raw
 raw

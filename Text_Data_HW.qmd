@@ -1,0 +1,108 @@
+---
+title: "**Textual Data HW**"
+author: "Eric Bouma"
+format: html
+editor: visual
+---
+
+## **Abstract**
+
+The purpose of this assignment is to analyze the course titles from all undergraduate offerings in VCU Life Sciences using textual data functions (stringr) . The data for this assignment is a text (.txt) file, with a textual "dump" of all course descriptions from Bioinformatics (BNFO), Environmental Studies (ENVS), and Life Sciences (LFSC).
+
+```{r, message=FALSE, echo=FALSE}
+
+#Read Packages
+
+library(tidyverse)
+library(readr)
+library(stringr)
+library( wordcloud)
+library(tm)
+
+```
+
+
+
+```{r, echo=FALSE}
+#Read in Data
+
+lfsc <- read_lines("LifeSciencesCurriculum.txt")
+
+#head(lfsc)
+
+```
+## **List of All Courses**
+```{r}
+
+str_detect(lfsc, "BNFO|ENVS|LFSC") -> idx1
+
+lfsc [idx1]
+
+```
+## **Pulling Out Course Info**
+```{r}
+
+#str_view(lfsc, "^[A-Z]{4} [0-9]{3}.+ [0-9] Hour[s]?\\.$")
+
+pattern <- "^[A-Z]{4} [0-9]{3}.+ [0-9] Hour[s]?\\.$"
+
+grepl( pattern, lfsc) -> idx1
+
+courses <- lfsc[idx1]
+#courses
+
+```
+## **Taking Selected Data and Putting it into a Data Frame**
+```{r}
+
+str_split( courses, pattern = "\\.",
+           simplify = TRUE) -> table1
+#table1
+
+data.frame ( Course = table1[,1],
+                     Title = str_trim(table1[,2]),
+                     Hours = str_trim(table1[,3])) |>
+  mutate( Hours = str_remove( Hours, " Hour")) |>
+  mutate( Hours = str_remove( Hours, "s"))  |>
+  mutate( Program = str_split( Course, " ", simplify = TRUE)[,1]) |>
+  mutate( Number = as.numeric (str_split( Course, " ", simplify = TRUE)[,2])) |>
+  select( Program, Number, Title, Hours) -> data
+```
+
+## **Bar Plot of Courses by Level Grouped by Program**
+```{r}
+
+library(RColorBrewer)
+
+data |>
+  mutate( `Course Level` = case_when(
+    Number >= 100 & Number <= 199 ~ 100,
+    Number >= 200 & Number <= 299 ~ 200,
+    Number >= 300 & Number <= 399 ~ 300,
+    Number >= 400 & Number <= 499 ~ 400)) -> data
+
+data |>
+  ggplot( aes( `Course Level`,
+               fill = Program)) +
+  labs ( title = "Number of Courses by Level Grouped by Program",
+         x = "Course Level",
+         y = "Count") +
+  geom_bar() +
+  scale_fill_brewer(palette = "Set2") +
+  theme_update()
+
+```
+
+## **Word Cloud**
+```{r, message=FALSE, warning=FALSE}
+
+wordcloud( words = data$Title,
+           min.freq = 1,
+           scale = c(3,0.5),
+           colors = brewer.pal(8, "Dark2"),
+           random.order = F,
+           rot.per = 0.25)
+
+
+```
+
