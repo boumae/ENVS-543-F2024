@@ -244,3 +244,12 @@ data.frame ( Course = raw[,1],
 
 ```
 
+
+
+```{r}
+
+data.frame (words, count = 1) |>
+  mutate (word = factor (words))
+
+```
+
