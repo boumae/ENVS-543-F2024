@@ -1,0 +1,325 @@
+---
+title: "**Regression Analysis Homework**"
+author: "Eric Bouma"
+format: html
+date: 11/19/24
+---
+
+![](media/models.png)
+
+```{r setup, include=FALSE}
+library( tidyverse )
+library( nycflights13 )
+library(rstatix)
+library(kableExtra)
+```
+
+
+## **Abstract** 
+Since regression analysis is such a fundamental component of inferences, I thought it would be a good idea to try to work through a few more examples to give you some more practice.  
+
+For this we will use some data on flights into and out of Newark (EWR), JFK, and La Guardia airports in NYC metropolitan area.
+
+```{r, results='hide'}
+summary( flights) 
+```
+
+We also have some data related to local weather conditions.
+
+```{r,results='hide'}
+summary( weather )
+```
+
+I'm going to make a synthetic data set consisting of flights out of JFK for the *ExpressJet* airlines.  Since the weather data is on the hour, I also make a synthetic varible `Month.Day.Hour` so that I can join the weather data to this one.
+
+```{r, results='hide'}
+flights %>%
+  filter( origin == "JFK", carrier == "EV") %>%
+  mutate( DateTime = paste(month,day,hour, sep=".")) %>%
+  select( DateTime, 
+          `Departure Delay` = dep_delay,
+          `Departure Time` = sched_dep_time) %>%
+  droplevels() -> df.jfk 
+summary( df.jfk )
+```
+
+Now I'll do the same with the weather data.
+
+```{r, results='hide'}
+weather %>%
+  filter( origin == "JFK") %>% 
+  mutate( DateTime = paste(month,day,hour, sep=".")) %>%
+  select( -origin, -year, -month, -day, -hour, -time_hour ) -> df.weather 
+summary( df.weather )
+```
+
+Now, I'm going to `merge` these two `data.frame` objects using the common `key` I made `DateTime`.
+
+```{r, results='hide'}
+merge( df.jfk, df.weather, by="DateTime" ) %>%
+  select( -DateTime ) -> df 
+
+summary( df )
+```
+
+
+## **Activity**
+
+What features of this data set may impact the departure delay for flights coming out of JFK on *ExpressJet* Airlines?
+
+## **P-Value Function**
+```{r}
+get_pval <- function( model ) {
+  f <- summary( model )$fstatistic[1]
+  df1 <- summary( model )$fstatistic[2]
+  df2 <- summary( model )$fstatistic[3]
+  p <- as.numeric( 1.0 - pf( f, df1, df2 ) )
+  return( p  )
+}
+
+```
+
+## **Linear Models v1**
+```{r}
+
+fit.time <- lm( `Departure Delay` ~ `Departure Time`, data = df )
+fit.temp <- lm( `Departure Delay` ~ temp, data = df )
+fit.dewp <- lm( `Departure Delay` ~ dewp, data = df )
+fit.humid <- lm( `Departure Delay` ~ humid, data = df )
+fit.wind.dir <- lm( `Departure Delay` ~ wind_dir, data = df )
+fit.wind.speed <- lm( `Departure Delay` ~ wind_speed, data = df )
+fit.wind.gust <- lm( `Departure Delay` ~ wind_gust, data = df )
+fit.precip <- lm( `Departure Delay` ~ precip, data = df )
+fit.pressure <- lm( `Departure Delay` ~ pressure, data = df )
+fit.visib <- lm( `Departure Delay` ~ visib, data = df )
+
+#quick anova
+#list(fit.time,
+     #fit.temp,
+     #fit.dewp,
+     #fit.humid,
+     #fit.wind.dir,
+     #fit.wind.speed,
+     #fit.wind.gust,
+     #fit.precip,
+     #fit.pressure,
+     #fit.visib) ->df.models.anova
+
+#lapply( df.models.anova, anova) -> anova_results
+#anova_results
+
+
+#R-sq and P-val calc
+data.frame( Model = c( "`Departure Delay` ~ `Departure Time`",
+                       "`Departure Delay` ~ temp",
+                       "`Departure Delay` ~ dewp",
+                       "`Departure Delay` ~ humid",
+                       "`Departure Delay` ~ wind_dir",
+                       "`Departure Delay` ~ wind_speed",
+                       "`Departure Delay` ~ wind_gust",
+                       "`Departure Delay` ~ precip",
+                       "`Departure Delay` ~ pressure",
+                       "`Departure Delay` ~ visib"), 
+            R2 = c( summary( fit.time )$r.squared,
+                    summary( fit.temp )$r.squared,
+                    summary( fit.dewp )$r.squared,
+                    summary( fit.humid )$r.squared,
+                    summary( fit.wind.dir )$r.squared,
+                    summary( fit.wind.speed )$r.squared,
+                    summary( fit.wind.gust )$r.squared,
+                    summary( fit.precip )$r.squared,
+                    summary( fit.pressure )$r.squared,
+                    summary( fit.visib )$r.squared), 
+            P = c( get_pval( fit.time), 
+                   get_pval( fit.temp ),
+                   get_pval( fit.dewp ),
+                   get_pval( fit.humid ),
+                   get_pval( fit.wind.dir ),
+                   get_pval( fit.wind.speed ),
+                   get_pval( fit.wind.gust ),
+                   get_pval( fit.precip ),
+                   get_pval( fit.pressure ),
+                   get_pval( fit.visib )) ) -> df.models
+
+```
+
+
+## **Initial Kable Table for v1 Models**
+```{r}
+
+df.models |>
+  arrange( -R2 ) |>
+  mutate( P = format( P, scientific=TRUE, digits=3)) |>
+  kable( caption = "Model parameters predicting late departure times from JFK on *ExpressJet* Airlines ",
+         digits = 3) |>
+   kable_classic( full_width = FALSE,
+                 lightable_options = "striped") |>
+  row_spec( 0, bold = TRUE)
+
+```
+
+## **AIC and Delta AIC Calculations for v1 Models**
+```{r}
+
+data.frame( Model2 = c( "fit.time",
+     "fit.temp",
+     "fit.dewp",
+     "fit.humid",
+     "fit.wind.dir",
+     "fit.wind.speed",
+     "fit.wind.gust",
+     "fit.precip",
+     "fit.pressure",
+     "fit.visib"),
+     model = I(list(fit.time,
+                    fit.temp,
+                    fit.dewp,
+                    fit.humid,
+                    fit.wind.dir,
+                    fit.wind.speed,
+                    fit.wind.gust,
+                    fit.precip,
+                    fit.pressure,
+                    fit.visib))) -> test
+
+#R-sq and P-val calc
+test |>
+  mutate(Model = c( "`Departure Delay` ~ `Departure Time`",
+                       "`Departure Delay` ~ temp",
+                       "`Departure Delay` ~ dewp",
+                       "`Departure Delay` ~ humid",
+                       "`Departure Delay` ~ wind_dir",
+                       "`Departure Delay` ~ wind_speed",
+                       "`Departure Delay` ~ wind_gust",
+                       "`Departure Delay` ~ precip",
+                       "`Departure Delay` ~ pressure",
+                       "`Departure Delay` ~ visib")) |>
+  mutate (R2 = c( summary( fit.time )$r.squared,
+                    summary( fit.temp )$r.squared,
+                    summary( fit.dewp )$r.squared,
+                    summary( fit.humid )$r.squared,
+                    summary( fit.wind.dir )$r.squared,
+                    summary( fit.wind.speed )$r.squared,
+                    summary( fit.wind.gust )$r.squared,
+                    summary( fit.precip )$r.squared,
+                    summary( fit.pressure )$r.squared,
+                    summary( fit.visib )$r.squared)) |>
+  mutate(  P = c( get_pval( fit.time), 
+                   get_pval( fit.temp ),
+                   get_pval( fit.dewp ),
+                   get_pval( fit.humid ),
+                   get_pval( fit.wind.dir ),
+                   get_pval( fit.wind.speed ),
+                   get_pval( fit.wind.gust ),
+                   get_pval( fit.precip ),
+                   get_pval( fit.pressure ),
+                   get_pval( fit.visib ))) -> test
+          
+#Calc AIC
+test$AIC <- sapply(test$model, AIC)
+
+#Calc delta AIC
+min_AIC <- min(test$AIC)
+test$Delta_AIC <- test$AIC - min_AIC 
+
+```
+
+
+## **V1 Kable Table with AIC and Delta AIC**
+```{r}
+
+test |>
+  select( - Model2,
+          - model) |>
+  arrange( -R2 ) |>
+  mutate( P = format( P, scientific=TRUE, digits=3)) |>
+  kable( caption = "Model parameters predicting late departure times from JFK on *ExpressJet* Airlines",
+         escape = FALSE,
+         row.names = FALSE, 
+         digits = 3) |>
+   kable_classic( full_width = FALSE,
+                 lightable_options = "striped") |>
+  row_spec( 0, bold = TRUE)
+
+```
+
+## **Linear Models v2**
+```{r}
+
+fit.time <- lm( `Departure Delay` ~ `Departure Time`, data = df )
+fit.visib <- lm( `Departure Delay` ~ visib, data = df )
+fit.humid <- lm( `Departure Delay` ~ humid, data = df )
+fit.time.visib <- lm( `Departure Delay` ~ `Departure Time` + visib, data = df )
+fit.time.humid <- lm( `Departure Delay` ~ `Departure Time`+ humid, data = df )
+fit.visib.humid <- lm( `Departure Delay` ~ visib + humid, data = df )
+fit.all <- lm( `Departure Delay` ~ `Departure Time` + visib + humid, data = df )
+
+data.frame( Model = c( "fit.time",
+                       "fit.visib",
+                       "fit.humid",
+                       "fit.time.visib",
+                       "fit.time.humid",
+                       "fit.visib.humid",
+                       "fit.all"),
+     model = I(list(fit.time,
+                       fit.visib,
+                       fit.humid,
+                       fit.time.visib,
+                       fit.time.humid,
+                       fit.visib.humid,
+                       fit.all))) -> test2
+
+test2 |>
+  mutate(Model = c( "`Departure Delay` ~ `Departure Time`",
+                       "`Departure Delay` ~ visib",
+                       "`Departure Delay` ~ humid",
+                       "`Departure Delay` ~ time + visib",
+                       "`Departure Delay` ~ time + humid",
+                       "`Departure Delay` ~ visib + humid",
+                       "`Departure Delay` ~ time + visib + humid")) |>
+  mutate (R2 = c( summary( fit.time )$r.squared,
+                    summary( fit.visib )$r.squared,
+                    summary( fit.humid )$r.squared,
+                    summary( fit.time.visib )$r.squared,
+                    summary( fit.time.humid )$r.squared,
+                    summary( fit.visib.humid )$r.squared,
+                    summary( fit.all)$r.squared)) |>
+  mutate(  P = c( get_pval( fit.time), 
+                   get_pval( fit.visib ),
+                   get_pval( fit.humid ),
+                   get_pval( fit.time.visib ),
+                   get_pval( fit.time.humid ),
+                   get_pval( fit.visib.humid ),
+                   get_pval( fit.all ))) -> test2
+#Calc AIC
+test2$AIC <- sapply(test2$model, AIC)
+
+#Calc delta AIC
+min_AIC2 <- min(test2$AIC)
+test2$Delta_AIC <- test2$AIC - min_AIC2
+
+
+```
+
+
+## **V2 Kable Table with AIC and Delta AIC**
+```{r}
+
+test2 |>
+  select( - model) |>
+  arrange( -R2 ) |>
+  mutate( P = format( P, scientific=TRUE, digits=3)) |>
+  kable( caption = "Best model parameters predicting late departure times from JFK on *ExpressJet* Airlines",
+         escape = FALSE,
+         row.names = FALSE, 
+         digits = 3) |>
+   kable_classic( full_width = FALSE,
+                 lightable_options = "striped") |>
+  row_spec( 0, bold = TRUE)
+
+```
+
+## **Results**
+
+With my initial v1 models, I chose the best three variables (time, visibility, and humidity) based upon these three having the smallest P-values (suggesting that there is a highly probable relationship). These variables made it to the next round of models (v2) where I did a combination between all three variables. V2 suggested that the additive model of all three had the best explanation for departure delays with a very low P-value and a delta AIC of zero. The runner up was the combination of time of flight and visibility explaining departure delays with an equally as low p-value and fairly low delta AIC of 12.1. Delta AIC of 12.1 means the model is typically a poor fit, however, when being compared to all three variables, it makes sense why it has a worse score.   
+

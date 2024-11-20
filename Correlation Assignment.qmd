@@ -2,6 +2,7 @@
 title: "**Correlation Assignment**"
 author: "Eric Bouma"
 format: html
+date: 11/14/24
 ---
 
 For this exercise, you will use our beloved Rice Rivers Center data to answer the following questions.  Create the standard Quarto HTML document and turn in your results by linking to your GitHub repository.
