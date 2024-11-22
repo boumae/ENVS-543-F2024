@@ -1,0 +1,279 @@
+---
+title: "**Analysis of Variance**"
+subtitle: "Homework"
+execute: 
+  echo: true
+format: 
+  html:
+    code-tools: true
+    toc: false
+    author: Eric Bouma
+    date: 11/21/24
+---
+
+Here is some new data to play with a bit to explore one-way and two-way analysis of variance models.  These data represent weight data associated with three different diet types.  There are 76 observations of individuals with the following characteristics:
+
+- Gender (0/1)
+- Age (earth years. 🤓)
+- Height (cm)
+- Pre.weight & weight6weeks (kg)
+- Diet (1,2,3)
+
+The data are located as a CSV file named `DietData.csv` linked from the Canvas page.  Load the data in and format things so they look correctly to you.
+
+```{r}
+# load the data in here
+read.csv( "DietData.csv") -> dd
+
+```
+
+```{r, message=FALSE}
+#load packages
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(kableExtra)
+```
+
+## **Exploratory Data Anlsysis**
+
+One of the first things to do is to look at the data and see if there are any obvious things.  Go ahead and explore these data visually.  What do you see?
+
+```{r}
+# Data visualization
+dd |>
+gather(key = "variable", value = "value") -> dd1
+
+ggplot(dd1, aes(x = variable, y = value)) + 
+  geom_boxplot() +
+  labs (title = "Visualization of Variables",
+        x = "Variable",
+        y = "Value") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```{r}
+#Data Vis p2
+
+ggplot(dd1, aes(x = value)) +
+  geom_histogram(binwidth = 2, fill = "skyblue", color = "black", alpha = 0.7) +
+  facet_wrap(~ variable, scales = "free_x") +  # One histogram for each variable
+  labs (title = "Visualization of Variables",
+        xlab = "Value",
+        ylab = "Frequency") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Nothing super crazy appears when looking at the data visually. Height appears to be the only variable with some outliers, the rest of the data appears to be fairly even in distribution.
+
+
+## **Estimating Mean Values**
+
+**Make a table of Weight Loss by gender and diet.**
+
+```{r}
+# Table output
+
+dd |>
+  mutate( WeightLoss = pre.weight - weight6weeks) -> dd.WL
+
+dd.WL |>
+  select( Person,
+          gender,
+          Diet,
+          WeightLoss) |>
+  arrange( Person) -> dd.WL
+
+dd.WL |>
+   kable( caption = "Weight Loss by Gender and Diet",
+         digits = 3) |>
+   kable_classic( full_width = FALSE,
+                 lightable_options = "striped") |>
+  row_spec( 0, bold = TRUE)
+```
+
+
+## **1-Way Analysis of Variance**
+
+*Diet Issues:* 
+
+
+The underlying linear model.
+
+
+$$
+y_{ij} = \mu + \tau_{Diet, i} + \epsilon_j
+$$
+
+
+Test the null hypothesis, $H_O:$ *There is no effect of diet on weight loss* (e.g., $\tau_{Diet-1} = \tau_{Diet-2} = \tau_{Diet-3} = 0.0$).  Is there evidence for one diet producing more weight loss than the others?  Create an `aov` analysis and assign it to the variable `fit.diet` and examine its contents.
+
+```{r}
+# Define model
+
+dd.WL$Diet <- factor(dd.WL$Diet, levels = c(1, 2, 3), labels = c("One", "Two", "Three"))
+#str(dd.WL)
+
+fit.diet <- aov(WeightLoss ~ factor(Diet), data = dd.WL)
+summary(fit.diet)
+```
+
+Are they all significantly different?  Try the `TukeyHSD()` Interpret the results.
+
+```{r}
+# Posthoc test
+
+tukey_result.d <- TukeyHSD(fit.diet)
+
+
+tukey_result.d
+
+```
+The results from the TukeyHSD test show us that there is a statistically significant difference between the means of diets Three-One and Three-Two at the 95% confidence interval. These two means are essentially identical. 
+
+ How much of the variation is explained?  If you notice when you do a summary from a `lm()` (regression) model, it gives you the $R^2$ values directly (remember $R^2 = \frac{SS_{model}}{SS_{Error}}$).  Does `summary()` of your `aov` model give you that?
+ 
+ No, summary of an `aov` does not provide an $R^2$ value for the model.
+ 
+```{r}
+# How much variance?
+
+df.1 <- dd.WL[ dd.WL$Diet == "One",] 
+df.2 <- dd.WL[ dd.WL$Diet == "Two",] 
+df.3 <- dd.WL[ dd.WL$Diet == "Three",]
+
+Diets <- c("One","Two","Three")
+WeightLoss <- c(mean(df.1$WeightLoss), mean(df.2$WeightLoss), mean( df.3$WeightLoss))
+WeightLoss.SE <- c(sd(df.1$WeightLoss), sd(df.2$WeightLoss), sd( df.3$WeightLoss))
+WeightLoss.SEM <- WeightLoss.SE / sqrt(50)
+
+sd <- paste( format(WeightLoss,digits=2), "+/-", format(WeightLoss.SE, digits=3))
+se <- paste( format(WeightLoss,digits=2), "+/-", format(WeightLoss.SEM, digits=3))
+df <- data.frame( Diets, sd, se )
+names(df) <- c("Diets","Mean Weight Loss +/- SD", "Weight Loss +/- SE")
+
+
+kable(df,row.names = FALSE,digits = 3,align = "lcc") |>
+  kable_classic( full_width = FALSE,
+                 lightable_options = "striped") |>
+  row_spec( 0, bold = TRUE)
+```
+
+Since I asked the question, the answer is probably no.  Why does it not do this?  Probably for historical reasons, which are a bit of a pain in the backside.  That being said, there are some `tidy` ways to fix this issue.  I'm going to use the `broom` package which allows us to clean up (or tidy if you will) the model objects.  This will take the model object and pull out *all* the ANOVA table stuff and put it into a `tibble`.
+
+```{r}
+library( broom ) 
+# use your model fit next (I called mine fit.diet)
+tidy_diet <- tidy( fit.diet )
+#tidy_diet
+```
+
+Now, since it is all easily accessible, we can calculate the $R^2$ from the new model output.
+
+```{r}
+
+# Estimate the variance explained from the raw sums of squares
+
+r2_Diet <- tidy_diet$sumsq[1] / sum( tidy_diet$sumsq )
+r2_Diet 
+
+```
+*Gender:* 
+
+The underlying linear model.
+
+
+$y_{ij} = \mu + \tau_{gender, i} + \epsilon_j$
+
+
+
+Independent of the diet, test the null hypothesis $H_O:$ *There is no difference in weight loss between genders* (e.g., $\tau_{gender-0} = \tau_{gender-2} = 0.0 $).  Is there evidence for one gender being significantly different than another?  How much of the variation is explained (another $R^2$ by gender)?
+
+```{r}
+# partition effects
+
+#gender as factor
+dd.WL$gender <- factor(dd.WL$gender, levels = c(0,1), labels = c("A", "B"))
+#str(dd.WL)
+
+#aov test
+fit.gender <- aov(WeightLoss ~ factor(gender), data = dd.WL)
+summary(fit.gender)
+```
+
+```{r}
+# Posthoc test
+tukey_result.g <- TukeyHSD(fit.gender)
+tukey_result.g
+```
+
+```{r}
+#R-sq of gender
+tidy_gender <- tidy( fit.gender )
+
+r2_gender <- tidy_gender$sumsq[1] / sum( tidy_gender$sumsq )
+r2_gender
+```
+
+**How do you interpret these results thus far?**
+
+My aov test provided a high p-value of 0.835, indicating that there is no statistically significant relationship between gender and weight loss. Meaning we failed to reject the null hypothesis. The produced R-Squared was also dismal, with less than 1% (0.06%) of the variation in weight loss being explained by gender. 
+
+# **Do genders respond differently to diets?**
+
+
+$y_{ijk} = \mu + \tau_{Diet,i} + \tau_{gender,j} + \epsilon_k$
+
+So here we do something a bit different.  We want to simultaneously ask the following questions:
+
+- Do diets influence weight loss?
+- Do genders influence weight loss?
+- Is there an interaction where different genders respond differently to different diets?
+
+In $R$, this is done as:
+
+```{r}
+# diet model
+fit.diet <- aov(WeightLoss ~ factor(Diet), data = dd.WL)
+```
+
+```{r}
+# gender model
+fit.gender <- aov(WeightLoss ~ factor(gender), data = dd.WL)
+```
+
+```{r}
+# interaction model
+
+
+#aov
+fit.interaction <- aov(WeightLoss ~ gender * Diet, data = dd.WL)
+summary(fit.interaction)
+```
+
+```{r}
+tukey_result.i <- TukeyHSD(fit.interaction)
+tukey_result.i
+```
+
+What is the $R^2$ for this model?
+
+```{r}
+# best model variance explained
+tidy_interaction <- tidy( fit.interaction )
+
+r2_interaction <- tidy_interaction$sumsq[1] / sum( tidy_interaction$sumsq )
+r2_interaction
+```
+
+
+# **Which Model is Best?**
+
+How would you compare the models you generated?  How do you interpret the findings?
+```{r}
+
+plot( TukeyHSD( fit.interaction))
+
+```
+
+*Explain, in words, your findings and interpretation of these findings*
+
+Of the three models that I created, only two of the three variables showed a statistically significant relationship; diet (p-val: 0.00546), and the interaction of gender and diet (P-val: 0.04884). Of the individual diets, the relationship between diet three and diet one (p-val: 0.0162), and diet three and diet two (p-val: 0.0129) were significant, diet two and diet one were not. Looking at the interaction of gender and diet, only two of the fifteen combinations were significant; Gender A: Diet 3 - Gender A: Diet 1 (P-val: 0.019), and Gender A: Diet Three- Gender A: Diet Two (P-val: 0.004). The interaction model findings are interesting because of the two combinations that were significant, there was only one gender (A), however gender was the only variable that was not significant on its own. Overall, it appears that diet (and the type of diet) is the most important factor in relation to weight loss. Though certain gender and diet combos can be significant.  
