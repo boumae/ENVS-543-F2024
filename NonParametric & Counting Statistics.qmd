@@ -1,0 +1,188 @@
+---
+title: "NonParametric & Counting Statistics"
+author: "Eric Bouma"
+format: html
+date: 12/3/24
+---
+
+## **Abstract**
+
+Counting and Non-Parametric Statistics are essential when you either have categorical data for both predictors and response variables OR your data that you wanted to use a parametric approach (correlation, regression, ANOVA) is not well-behaved and will continue to conform to the assumptions of those models (e.g., normality, homoscedasticity, etc.).
+
+This assignment covers the materials in the lecture on Counting Statistics & Other Non-Parametric Approaches. As is expected, answer this using a Quarto document, push it to your repository, and turn in the URL.
+
+## **Assignment**
+
+For each of the following questions, please provide your analysis and an interpretation (e.g., written as you would in a scientific publication). If it helps to describe your result, add tables or figures to help make your case. For every case, explain why you chose the particular analysis you did and demonstrate the reasons from the data.
+
+**Run Libraries**
+
+```{r, message=FALSE}
+library( tidyverse )
+library( forcats )
+```
+
+## **Question 1**
+
+The FDA has suggested a change in a medication that has been shown to have detrimental side effects in half of the patients. A clinical trial was conducted with nineteen patients; only three reported side effects. Did the change make a significant difference? 
+
+**Binomial Setup & Plot**
+
+```{r}
+#prob of side effect = 50%
+#side effect patients = 3
+#non-side effect patients = 16
+
+side_effect <- 3
+nonside_effect <- 16
+
+samples <- c(side_effect, nonside_effect)
+p_side_effect <- 0.5
+
+df <- data.frame( Counts = c( samples, 0.5 * sum(samples), ( (1-0.5) * sum(samples) )),
+                    Drug.Response = c("Side-effect", "Other", "Side-effect", "Other"),
+                    Group = c("Observed","Observed", "Expected", "Expected") )
+
+ggplot( df, 
+        aes(Drug.Response,Counts, fill=Group) )+ 
+  geom_bar( position="dodge", stat="identity") 
+```
+
+**Binomial Test**
+
+A binomial test works best for this question because we have a number of "successful occurrences", a number of "total observations", and a "probability" of what we expect our results to be. There are also only two outcomes/groups (bi) in this data.   
+
+```{r}
+
+fit <- binom.test(x=samples, p = p_side_effect )
+fit 
+```
+
+**Results**
+
+The results of the binomial test suggest that the probability of a detrimental side effect are not equal to 50%, and we reject the null hypothesis (p = 0.5). The test instead showed that there is a range of 3.4-39.6% chance of having a side effect in the clinical trial. The bar chart backs this up by showing the expected vs observed results of the trials and the expected number of side effects being much lower than observed. The change did make a significant difference.
+
+## **Question 2**
+
+Two different environmental remediation treatments are evaluated for the impacts on turbidity (measured using the Nephelometric Turbidity Unit or NTU). For regulatory reasons, turbidity is binned into four groups based on NTU: 0-15 ntu, 16-22 ntu, 23-30 ntu, and 31+ ntu. Do both treatments have the same impact on turbidity? Explain.
+
+**Read Data**
+
+```{r, message=FALSE}
+
+read_csv( "ntu_data.csv") -> ntu.data
+
+```
+
+**Data Visualization**
+
+```{r}
+
+hist(ntu.data$NTU)
+
+```
+
+**Mann-Whitney Test**
+
+A Mann-Whitney test is used when there are two independent groups of data that are not normally distributed. The data for this question is heavily skewed to the left, and we have two groups (treatments). 
+
+```{r}
+#str(ntu.data)
+ntu.data$Treatment <- factor(ntu.data$Treatment, levels = c("Treatment A", "Treatment B"), labels = c("A", "B"))
+
+fit.NTU <- wilcox.test(NTU ~ factor(Treatment), data = ntu.data)
+
+fit.NTU
+
+```
+
+**Results**
+
+Both treatments do not have the same impact on turbidity. Due to the non-normal distribution of the data, a Mann-Whitney Test was used. The results of the Mann-Whitney Test tells us that there is a statistically significant difference between the two groups (A and B) (P-Value = 1.285e-05). Meaning, we reject the null hypothesis that both groups have an identical distribution.
+
+## **Question 3**
+
+A dozen graduate students tried to determine if there was a relationship between their undergraduate GPA and their scores on the Graduate Records Examination. Look at these data and determine the extent to which they are related. Explain.
+
+**Read Data**
+
+```{r, message=FALSE}
+
+read_csv( "grad_school.csv") -> grad.data
+
+```
+
+**Data Visualization**
+
+```{r}
+
+hist(grad.data$GRE)
+hist(grad.data$GPA)
+
+```
+
+**Spearmans Cor.test**
+
+Due to the non-normal distribution of the data, parametric tests cannot be used. Since there are two variables here, a correlation test would make sense if the data was "normal". The spearmans correlation test is one for non-normally distributed data, and a good choice for this data.  
+
+```{r}
+Q3.spearman <- cor.test (grad.data$GPA, grad.data$GRE,
+                         method = "spearman")
+
+Q3.spearman
+```
+
+**Results**
+
+Using the spearmans cor.test, we have a slightly significant relationship between GPA and GRE, P-Value = 0.04593. The spearmans rho value tells us that when one variables increases, the other variable also tends to increase, and vise versa (rho = 0.5845).
+
+## **Question 4**
+
+You are looking at fruit yield on dogwood. You designed an experiment with four different treatments and measured the total yield in germinated seeds. Are there differences in yield? Explain.
+
+**Read Data**
+
+```{r, message=FALSE}
+
+read_csv("DogwoodSeeds.csv") -> dogwood.data
+
+```
+
+**Data Visualization**
+
+```{r,message=FALSE, warning=FALSE}
+
+dogwood.data |>
+  mutate( Treatment = factor( Treatment ) ) |> 
+  mutate( Treatment = fct_recode(Treatment, 
+                             A="1",
+                             B="2",
+                             C="3",
+                             D="4")) -> dogwood.data4 
+  
+ggplot( dogwood.data4, aes(Treatment, Seeds) ) + 
+  geom_boxplot(notch=TRUE)
+
+```
+
+```{r}
+dogwood.data$Treatment <- as.numeric(factor(dogwood.data$Treatment))
+
+hist(dogwood.data$Treatment)
+hist(dogwood.data$Seeds)
+```
+
+**Kruskal-Wallis Test**
+
+The reason for choosing the Kruskal-Wallis Test is because of the non-normal distribution of the data along with the number of "groups" (treatments) in the seed data. The K-W test is essentially a Mann-Whitney Test that is designed for more than two groups, perfect for the 4 groups in this dataset. 
+
+```{r}
+
+fit.dogwood <- kruskal.test( Seeds ~ Treatment, data=dogwood.data4 )
+fit.dogwood 
+
+```
+
+**Results**
+
+According to the Kruskal-Wallis test, there are sizable differences in the different treatments, as the chi-squared is a larger number of 25.63. This finding is statistically significant as the associated p-value was 1.141e-05 indicating that there is a significant difference in the distributions of the treatments.
