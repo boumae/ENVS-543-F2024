@@ -1,0 +1,471 @@
+---
+title: "Final Exam"
+author: "Eric Bouma"
+format: html
+editor: visual
+---
+
+```{r, message=FALSE}
+
+library( tidyverse )
+library( lubridate )
+library( dplyr )
+library( knitr )
+library( kableExtra )
+library(ggspatial)
+library(prettymapr)
+```
+
+```{r, message=FALSE}
+
+read_csv("Arapat_Locations.csv") -> ara.locations
+read_csv("Arapat_Samples.csv") -> ara.samples
+
+
+```
+
+## Q1. Do sampled populations of the beetle have different sex ratios? You can consider the plant to be replicated within each site.
+
+I.E. how does the male:female ratio differ from site to site?
+
+```{r}
+
+ara.samples |>
+  group_by(Site) |>
+  summarise( Males = sum(Sex == "Male"),
+             Females = sum(Sex == "Female")) |>
+  mutate( MFRatio = Males/Females)-> Q1
+
+Q1$SiteNum <- as.numeric(gsub("Site", "", Q1$Site))
+
+Q1 |>
+  arrange( SiteNum ) -> Q1
+
+```
+
+```{r}
+
+Q1 |>
+    ggplot( aes(x = factor(SiteNum), y = MFRatio)) + 
+    labs ( title = "Male to Female Ratio at Each Site",
+           x = "Site",
+           y = "Ratio") + 
+    theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5)) +
+    geom_col(col = "black",
+            fill = "blue") +
+  scale_x_discrete(labels = as.character(1:31))
+
+```
+
+## Q2. Which sites have sex ratios that deviate from equal proportions of males and females at the site?
+
+```{r}
+
+Q1 |>
+    ggplot( aes(x = factor(SiteNum), y = MFRatio)) + 
+    labs ( title = "Male to Female Ratio at Each Site",
+           x = "Site",
+           y = "Ratio") + 
+    theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5)) +
+    geom_col(col = "black",
+            fill = "blue") +
+  scale_x_discrete(labels = as.character(1:31)) +
+  geom_hline(yintercept = 1, color = "red", linetype = "solid", size = 0.5)
+
+
+```
+
+29 out of 31 sites have sex ratios that deviate from equal proportions of males and females. Sites 23 and 25 are the only two which are an equal 1:1 proportion. 
+
+
+
+## Q3.Is there a functional relationship between the habitat suitability at the sampling locations and the sex ratio? Since all of our suitability measurements are taken from raster data with a cell size of 1.0 km2 (e.g., all plants are in the same grid cell), collapse the sex ratio estimates to a single value per site
+
+```{r}
+
+library(raster)
+library(sf)
+
+#read in raster
+r <- raster("suitability_now.tif")
+#proj raster
+new.proj <- "+proj=longlat +datum=WGS84 +no_defs +type=crs"
+
+r.utm <- projectRaster(r, crs = new.proj)
+#points as sf and correct crs
+ara.locations |>
+  st_as_sf( coords=c("Longitude","Latitude"), 
+          crs=4326 ) -> sites
+#pull out raster data for each site
+extract( r.utm, sites) -> habitat_score
+
+sites$HabitatSuitPresent <- habitat_score
+
+merge( sites, Q1, by = "Site", all = FALSE) -> Q3
+
+```
+
+```{r}
+#p-value function
+get_pval <- function( model ) {
+  f <- summary( model )$fstatistic[1]
+  df1 <- summary( model )$fstatistic[2]
+  df2 <- summary( model )$fstatistic[3]
+  p <- as.numeric( 1.0 - pf( f, df1, df2 ) )
+  return( p  )
+}
+
+```
+
+```{r}
+
+fit.ratio <- lm(MFRatio ~ HabitatSuitPresent, data = Q3)
+
+
+par(mfrow = c(1,3))
+plot(fit.ratio, which = 2, main = "MFRatio ~ HabitatSuitPresent")
+hist(Q3$MFRatio, main = "Male to Female Ratio")
+hist(Q3$HabitatSuitPresent, main = "Present Day Habitat Suitability")
+par(mfrow = c(1,1))
+
+```
+
+```{r}
+
+data.frame( Model = c("Male to Female Ratio ~ Habitat Suitability"),
+            R2 = c(summary(fit.ratio)$r.squared),
+            P = c( get_pval( fit.ratio) )) -> df.models.Q3
+
+df.models.Q3 |>
+  arrange( -R2 ) |>
+  mutate( P = format( P, scientific=TRUE, digits=3)) |>
+  kable( caption = "Male to Female Ratio Explained by Habitat Suitability",
+         digits = 3) |>
+   kable_classic( full_width = FALSE,
+                 lightable_options = "striped") |>
+  row_spec( 0, bold = TRUE)
+
+```
+
+
+```{r}
+
+ggplot( Q3, aes( HabitatSuitPresent,
+                      MFRatio)) +
+      labs ( title = "Relationship Between Habitat Suitability and the Ratio of Male to Female Beetles",
+             x = "Habitat Suitability",
+             y = "Ratio of Male to Female") +
+    stat_smooth( formula = y ~ x,
+               method = "lm",
+               alpha = 1) +
+  geom_point( col = "red")
+
+```
+
+(Pearson Correlation, $\rho$ = `r result$p.value`).
+
+
+
+
+
+## Q4. Does the inclusion of Phenotype A and Phenotype B improve the functional relationship over habitat suitability alone?
+
+```{r}
+#data wrangle 
+ara.samples |>
+  group_by(Site) |>
+  summarise( PhenotypeA = mean(PhenotypeA),
+             PhenotypeB = mean(PhenotypeB)) -> Q4
+
+merge( Q3,Q4, by = "Site", all = FALSE) -> Q4.1
+
+Q4.1 |>
+  arrange( SiteNum ) -> Q4.1
+
+#new models
+fit.PhenoA <- lm(MFRatio ~ PhenotypeA, data = Q4.1)
+fit.PhenoB <- lm(MFRatio ~ PhenotypeB, data = Q4.1)
+fit.PhenoBoth <- lm(MFRatio ~ PhenotypeA + PhenotypeB, data = Q4.1)
+fit.All <- lm(MFRatio ~ PhenotypeA + PhenotypeB + HabitatSuitPresent, data = Q4.1)
+
+# data distribution visualization
+par(mfrow = c(1,2))
+plot(fit.PhenoA, which = 2, main = "Phenotype A")
+hist(Q4.1$PhenotypeA, main = "Phenotype A")
+plot(fit.PhenoB, which = 2, main = "Phenotype B")
+hist(Q4.1$PhenotypeB, main = "Phenotype B")
+plot(fit.PhenoBoth, which = 2, main = "A + B")
+plot(fit.All, which = 2, main = "All")
+par(mfrow = c(1,1))
+
+
+```
+
+```{r}
+
+data.frame( Model = c("Male to Female Ratio ~ Habitat Suitability",
+                      "Male to Female Ratio ~ Phenotype A",
+                      "Male to Female Ratio ~ Phenotype B",
+                      "Male to Female Ratio ~ Phenotype A + Phenotype B",
+                      "Male to Female Ratio ~ Phenotype A + Phenotype B + Habitat Suitability"),
+            R2 = c(summary(fit.ratio)$r.squared,
+                   summary(fit.PhenoA)$r.squared,
+                   summary(fit.PhenoB)$r.squared,
+                   summary(fit.PhenoBoth)$r.squared,
+                   summary(fit.All)$r.squared),
+            P = c( get_pval( fit.ratio),
+                   get_pval( fit.PhenoA),
+                   get_pval( fit.PhenoB),
+                   get_pval( fit.PhenoBoth),
+                   get_pval( fit.All) )) -> df.models.Q4
+
+#####AIC Calc######################################################################################
+
+data.frame( Model2 = c( "fit.ratio",
+     "fit.PhenoA",
+     "fit.PhenoB",
+     "fit.PhenoBoth",
+     "fit.All"),
+     model = I(list(fit.ratio,
+                    fit.PhenoA,
+                    fit.PhenoB,
+                    fit.PhenoBoth,
+                    fit.All))) -> models.aic
+
+#R-sq and P-val calc
+models.aic |>
+  mutate(Model = c( "Male to Female Ratio ~ Habitat Suitability",
+                      "Male to Female Ratio ~ Phenotype A",
+                      "Male to Female Ratio ~ Phenotype B",
+                      "Male to Female Ratio ~ Phenotype A + Phenotype B",
+                      "Male to Female Ratio ~ Phenotype A + Phenotype B + Habitat Suitability"))|>
+  mutate (R2 = c( summary(fit.ratio)$r.squared,
+                   summary(fit.PhenoA)$r.squared,
+                   summary(fit.PhenoB)$r.squared,
+                   summary(fit.PhenoBoth)$r.squared,
+                   summary(fit.All)$r.squared)) |>
+  mutate(  P = c( get_pval( fit.ratio),
+                   get_pval( fit.PhenoA),
+                   get_pval( fit.PhenoB),
+                   get_pval( fit.PhenoBoth),
+                   get_pval( fit.All ))) -> models.aic
+          
+#Calc AIC
+models.aic$AIC <- sapply(models.aic$model, AIC)
+
+#Calc delta AIC
+min_AIC <- min(models.aic$AIC)
+models.aic$ΔAIC <- models.aic$AIC - min_AIC 
+
+```
+
+```{r}
+
+models.aic |>
+  select( - Model2,
+          - model) |>
+  arrange( AIC ) |>
+  mutate( P = format( P, scientific=TRUE, digits=3)) |>
+  kable( caption = "Which Variables Best Influence Male to Female Ratio?",
+         digits = 3) |>
+   kable_classic( full_width = FALSE,
+                 lightable_options = "striped") |>
+  row_spec( 0, bold = TRUE)
+
+```
+The table above tells us that the variable with the best functional relationship is habitat suitability. Habitat suitability has the only significant p-value (i.e there is a relationship between male to female ratio and habitat suitability) and it has the lowest AIC and ΔAIC value. The lowest AIC value indicates the best model.
+
+
+
+## Q5. Using the data from the last glacial maximum and the sampling locations, has the suitability changed at each location (e.g., was it as suitable 20,000 years ago as today)?
+
+```{r}
+
+#read in raster
+r2 <- raster("suitability_lgm.asc")
+
+r2.utm <- projectRaster(r2, crs = new.proj)
+
+#extract data
+extract( r2.utm, sites) -> habitat_score2
+
+sites$HabitatSuitHistorical <- habitat_score2
+
+#change data format for easier visualization
+sites_long <- pivot_longer(sites, 
+                          cols = c("HabitatSuitHistorical", "HabitatSuitPresent"),
+                          names_to = "Time_Period",
+                          values_to = "Habitat_Suitability")
+
+```
+
+
+```{r}
+
+ggplot(Q6, aes(x = factor(SiteNum), y = ΔHabitat, fill = ΔHabitat > 0)) +  
+  geom_bar(stat = "identity", color = "black") +  # Create bars with black border
+  scale_fill_manual(values = c("red", "green")) +  # Set red for negative and green for positive
+  labs(
+    title = "Change in Habitat by Site", 
+    x = "Site", 
+    y = "Change in Habitat"
+  ) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r}
+
+ggplot(sites_long, aes(x = Time_Period, y = Habitat_Suitability)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Habitat Suitability by Time Period",
+       x = "Time Period", y = "Habitat Suitability")
+
+
+```
+
+
+## Q6. Predict the distribution of the historical sex ratio by applying the model you developed for current conditions to the suitability estimated from the last glacial maximum.  Across the landscape, do you detect any trends that may be due to the differences in climate, as measured by our estimates of habitat suitability?
+
+```{r}
+
+#merge habitat scores w MF ratio values
+merge( sites, Q1, by = "Site", all = FALSE) -> Q6
+
+Q6 |>
+  arrange( SiteNum ) |>
+  select( - Males,
+          - Females)-> Q6
+
+Q6|>
+  mutate( ΔHabitat = HabitatSuitPresent - HabitatSuitHistorical,
+          ΔMFRatio = MFRatio - Predicted_MFRatio_Historical) -> Q6
+
+
+model.Q6 <- lm(MFRatio ~ HabitatSuitPresent + HabitatSuitHistorical, data = Q6)
+
+Q6$Predicted_MFRatio_Historical <- predict(model.Q6, newdata = Q6)
+
+par(mfrow = c(1,2))
+plot(model.Q6, which = 2)
+hist(Q6$Predicted_MFRatio_Historical)
+par(mfrow = c(1,1))
+
+```
+
+```{r}
+
+map_data("world") |>
+  filter( region == "Mexico") -> map
+
+ggplot(Q6) +
+  geom_polygon( aes( x=long, 
+                     y=lat, 
+                     group=group ), 
+                data=map, 
+                fill="grey" ) +
+  geom_sf(aes(color = Predicted_MFRatio_Historical), size = 3) +  # Color by MFR Difference
+  labs(title = "Predicted Histroical Male to Female Ratio",
+       color = "MF Ratio") +
+ theme_bw( base_size = 12 )  +
+  theme(legend.position = "right")  +
+  coord_sf( xlim = c(-115, -106),
+            ylim = c(22, 30) )
+
+```
+
+
+```{r}
+
+ggplot(Q6) +
+  geom_polygon( aes( x=long, 
+                     y=lat, 
+                     group=group ), 
+                data=map, 
+                fill="grey" ) +
+  geom_sf(aes(color = ΔMFRatio), size = 3) +  # Color by MFR Difference
+  scale_color_gradient2(midpoint = 0, low = "blue", high = "red", mid = "white") +  # Blue for decrease, red for increase
+  labs(title = "Differences in Male to Female Ratio: Historical vs. Present",
+       color = "MFR Difference") +
+ theme_bw( base_size = 12 )  +
+  theme(legend.position = "right")  +
+  coord_sf( xlim = c(-115, -106),
+            ylim = c(22, 30) )
+
+```
+
+```{r}
+
+ggplot(Q6) +
+  geom_polygon( aes( x=long, 
+                     y=lat, 
+                     group=group ), 
+                data=map, 
+                fill="grey" ) +
+  geom_sf(aes(color = ΔHabitat), size = 3) +  # Color by MFR Difference
+  scale_color_gradient2(midpoint = 0, low = "blue", high = "red", mid = "white") +  # Blue for decrease, red for increase
+  labs(title = "Differences in Male to Female Ratio: Historical vs. Present",
+       color = "Habitat Difference") +
+ theme_bw( base_size = 12 )  +
+  theme(legend.position = "right")  +
+  coord_sf( xlim = c(-115, -106),
+            ylim = c(22, 30) )
+
+```
+
+```{r}
+#S-W normaility test
+shapiro.test( Q6$ΔMFRatio)
+shapiro.test( Q6$ΔHabitat)
+
+#Visual normality test
+par(mfrow = c(1,2))
+qqnorm(Q6$ΔHabitat)
+qqline(Q6$ΔHabitat, col = "red")
+qqnorm(Q6$ΔMFRatio)
+qqline(Q6$ΔMFRatio, col = "red")
+par(mfrow = c(1,1))
+
+#cor test for non normal data
+cor.test( Q6$ΔMFRatio, Q6$ΔHabitat, method = "spearman" ) -> Q6.cor.test
+Q6.cor.test
+
+```
+Shapiro tests for normality,due to the non-normality of one variable, spearman's test was used. Due to the significant p-value of the habitat S-W test, the variable was determined as not normally distributed.  
+
+```{r}
+
+ggplot(Q6, aes(x = ΔHabitat, y = ΔMFRatio )) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "red") +  # Add regression line
+  labs(title = "Change in MFR vs. Change in Habitat Suitability",
+       x = "Change in Habitat Suitability",
+       y = "Change in MFR")
+
+
+```
+
+
+
+
+## Abstract
+
+
+The Sonora Desert bark beetle, *Araptus attenuatus*, is a tiny beetle that is found exclusively in the Sonora desert in parts of Mexico and the United States. This beetle has an interesting life cycle, as it lives inside a specific species of plant, *Euphoria lomelli*, and no where else. The males will hollow out a chamber inside of newly senescing stems of *E. lomelli* to live in. Once they have a home, males then produce a hormone that attracts females for reproduction. Both male and female beetles can fly, however, once a male gets a home established, they seem to stay in one place and it is the females that move around more. The overall motivation for this report is to determine the extent to which changing climate may have impacted sex ratio divergence of *Araptus attenuatus* among locations in the Sonora Desert.
+
+## Methods
+
+The data sets used include a .CSV file (Ara Locations) of point locations for all 31 sampling sites, a .CSV (Ara Samples) of the raw characteristic beetle data for all 31 sites, a GeoTIFF (Suitability now) raster of estimated habitat suitability index, and a .ASC (Suitability lmg) raster of historical estimates for habitat suitability during the last glacial maximum.   
+To help determine if a changing climate influences the sex ratio, a couple of questions need to be answered:
+
+1) Do sampled populations of the beetle have different sex ratios? The `tidyverse` suit of functions was used to group the "Ara samples" data by each site and then calculate a new column for the male to female ratio. Specifically, the `mutate`, `summarise`, and `group by` functions. `ggplot` was used to display the results graphically via a bar chart. 
+2) Which sites have sex ratios that deviate from equal proportions of males and females at the site? The `ggplot` graph from the previous question was used to show the deviation from a perfect 1:1 ratio. A red line was applied at 1 (perfect ratio) to show which sites had an equal number of males to females. 
+3) Is there a functional relationship between the habitat suitability at the sampling locations and the sex ratio? The "Ara locations" data set was used to make a `sf` object called `sites`. Then the "Suitability now" raster was read in, and the `extract` function was used to give each `sf` point in `sites` an attributed suitability value from the raster. `QQnorm` and `ggplot` graphs were used to visualize the data to determine the statistics to be ran. A `lm` was used to see if there was a relationship between `Habitat Suitability` and the `MFRatio`   
+4) Does the inclusion of Phenotype A and Phenotype B improve the functional relationship over habitat suitability alone? `Tidyverse` was used again on the "Ara samples" data to create two new columns for `PhenoType A` and `PhenoType B` for each site using the `summarise` and `groupby` function. Data was visualized using `qqnorm` and `histograms` to check for normality and residual behavior. Four `lm` models were created, `MFRatio ~ PhenoType A`, `MFRatio ~ PhenoType B`, `MFRatio ~ PhenoType A` + `PhenoType B`, and `MFRatio ~ PhenoType A` + `PhenoType B` + `Habitat Suitability`. These four models were then put into a `data.frame` for further analysis where the $R^2$, $p$-value, $AIC$, and $ΔAIC$ were calculated for each. Finally, the data was displayed in a `kable` table.  
+5) Has the suitability changed from 20,000 years ago? The "Suitability lmg" raster was read in to `extract` historical habitat suitability scores, and `sites` was used again to attribute the values to the 31 different sites. `sites`  has the present day habitat scores already from question 3, and a `ggplot` bar graph was used to visualize the difference. Red bars represented a decrease in habitat score, and a green bar represented an increase in habitat score.  
+6) What was the historical sex ratio, and are there trends due to climatic changes? The `sites` data set was merged with the data set from question one containing the `MFRatio`. `mutate` was then used to calculate two new columns for `ΔHabitat` and `ΔMFRatio`. `ΔHabitat` was calculated by subtracting the historical value by the present day habitat value. `ΔMFRatio` was calculated by first using a `lm` to determine the current relationship between `MFRatio ~ HabitatSuitPresent + HabitatSuitHistorical`. Then the `predict` function was used to determine the historical `MFRatio`. `qqnorm`, `histogram`, and `shapiro.test` were used to visualize the behavior of the data and residuals to determine the correct statistical test. A `spearmans cor.test` was used to determine the significance of the relationship between `ΔHabitat` and `ΔMFRatio`. Finally, multiple `ggplot` graphs were used to visualize the differences in the historical vs present day habitat and `Habitat Suitability` and the `MFRatio` through a map overlay.   
+
+##Results
+
+
+## Appendix
