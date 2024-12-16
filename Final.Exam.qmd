@@ -14,6 +14,7 @@ library( knitr )
 library( kableExtra )
 library(ggspatial)
 library(prettymapr)
+library(sf)
 ```
 
 ```{r, message=FALSE}
@@ -97,7 +98,7 @@ ara.locations |>
   st_as_sf( coords=c("Longitude","Latitude"), 
           crs=4326 ) -> sites
 #pull out raster data for each site
-extract( r.utm, sites) -> habitat_score
+raster::extract( r.utm, sites) -> habitat_score
 
 sites$HabitatSuitPresent <- habitat_score
 
@@ -287,7 +288,7 @@ r2 <- raster("suitability_lgm.asc")
 r2.utm <- projectRaster(r2, crs = new.proj)
 
 #extract data
-extract( r2.utm, sites) -> habitat_score2
+raster::extract( r2.utm, sites) -> habitat_score2
 
 sites$HabitatSuitHistorical <- habitat_score2
 
@@ -299,6 +300,65 @@ sites_long <- pivot_longer(sites,
 
 ```
 
+```{r}
+
+map_data("world") |>
+  filter( region == "Mexico") -> map
+
+min_value.P <- min(Q6$HabitatSuitPresent, na.rm = TRUE)
+max_value.P <- max(Q6$HabitatSuitPresent, na.rm = TRUE)
+min_value.H <- min(Q6$HabitatSuitHistorical, na.rm = TRUE)
+max_value.H <- max(Q6$HabitatSuitHistorical, na.rm = TRUE)
+
+ggplot(Q6) +
+  geom_polygon( aes( x=long, 
+                     y=lat, 
+                     group=group ), 
+                data=map, 
+                fill="grey" ) +
+  geom_sf(aes(color = HabitatSuitPresent), size = 3) +
+  scale_color_gradient2(midpoint = 0, low = "blue", high = "red", mid = "white",
+                        limits = c(min_value.P, max_value.H)) +
+  labs(title = "Present Habitat Suitability",
+       color = "Suitability",
+       x = "Latitude",
+       y = "Longitude") +
+ theme_bw( base_size = 12 )  +
+  theme(legend.position = "right")  +
+  coord_sf( xlim = c(-115, -106),
+            ylim = c(22, 30) ) +
+  geom_sf_text(aes(label = SiteNum), size = 2.5, color = "black") -> Q5.map.P
+
+```
+
+```{r}
+
+ggplot(Q6) +
+  geom_polygon( aes( x=long, 
+                     y=lat, 
+                     group=group ), 
+                data=map, 
+                fill="grey" ) +
+  geom_sf(aes(color = HabitatSuitHistorical), size = 3) +
+  scale_color_gradient2(midpoint = 0, low = "blue", high = "red", mid = "white",
+                        limits = c(min_value.P, max_value.H)) +  
+  labs(title = "Historical Habitat Suitability",
+       color = "Suitability",
+       x = "Latitude",
+       y = "Longitude") +
+ theme_bw( base_size = 12 )  +
+  theme(legend.position = "right")  +
+  coord_sf( xlim = c(-115, -106),
+            ylim = c(22, 30) ) +
+  geom_sf_text(aes(label = SiteNum), size = 2.5, color = "black") -> Q5.map.H
+```
+
+```{r}
+par(mfrow = c(1,2))
+plot(Q5.map.P)
+plot(Q5.map.H)
+par(mfrow = c(1,1))
+```
 
 ```{r}
 
@@ -337,14 +397,16 @@ Q6 |>
   select( - Males,
           - Females)-> Q6
 
+model.Q6 <- lm(MFRatio ~ HabitatSuitPresent + HabitatSuitHistorical, data = Q6)
+
+Q6$Predicted_MFRatio_Historical <- predict(model.Q6, newdata = Q6)
+
 Q6|>
   mutate( ΔHabitat = HabitatSuitPresent - HabitatSuitHistorical,
           ΔMFRatio = MFRatio - Predicted_MFRatio_Historical) -> Q6
 
 
-model.Q6 <- lm(MFRatio ~ HabitatSuitPresent + HabitatSuitHistorical, data = Q6)
 
-Q6$Predicted_MFRatio_Historical <- predict(model.Q6, newdata = Q6)
 
 par(mfrow = c(1,2))
 plot(model.Q6, which = 2)
@@ -404,7 +466,7 @@ ggplot(Q6) +
                 fill="grey" ) +
   geom_sf(aes(color = ΔHabitat), size = 3) +  # Color by MFR Difference
   scale_color_gradient2(midpoint = 0, low = "blue", high = "red", mid = "white") +  # Blue for decrease, red for increase
-  labs(title = "Differences in Male to Female Ratio: Historical vs. Present",
+  labs(title = "Differences in Habitat Suitability: Historical vs. Present",
        color = "Habitat Difference") +
  theme_bw( base_size = 12 )  +
   theme(legend.position = "right")  +
@@ -415,8 +477,8 @@ ggplot(Q6) +
 
 ```{r}
 #S-W normaility test
-shapiro.test( Q6$ΔMFRatio)
-shapiro.test( Q6$ΔHabitat)
+shapiro.test( Q6$ΔMFRatio) -> Shap.Ratio
+shapiro.test( Q6$ΔHabitat) -> Shap.Hab
 
 #Visual normality test
 par(mfrow = c(1,2))

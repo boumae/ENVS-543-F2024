@@ -7,8 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Eric Bouma">
+<meta name="dcterms.date" content="2024-12-16">
 
-<title>Final.Exam.WrittenDoc</title>
+<title>Final Exam Written Document</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -79,7 +80,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Final.Exam.WrittenDoc</h1>
+<h1 class="title">Final Exam Written Document</h1>
 </div>
 
 
@@ -93,6 +94,12 @@ window.Quarto = {
           </div>
   </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 16, 2024</p>
+    </div>
+  </div>
   
     
   </div>
@@ -108,23 +115,23 @@ window.Quarto = {
 </section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
-<p>The data sets used include a .CSV file (Ara Locations) of point locations for all 31 sampling sites, a .CSV (Ara Samples) of the raw characteristic beetle data for all 31 sites, a GeoTIFF (Suitability now) raster of estimated habitat suitability index, and a .ASC (Suitability lmg) raster of historical estimates for habitat suitability during the last glacial maximum.<br>
+<p>The data sets used include a .CSV file (<code>Ara Locations</code>) of point locations for all 31 sampling sites, a .CSV (<code>Ara Samples</code>) of the raw characteristic beetle data for all 31 sites, a GeoTIFF (<code>Suitability now</code>) raster of estimated habitat suitability index, and a .ASC (<code>Suitability lmg</code>) raster of historical estimates for habitat suitability during the last glacial maximum.<br>
 To help determine if a changing climate influences the sex ratio, a couple of questions need to be answered:</p>
 <ol type="1">
 <li>Do sampled populations of the beetle have different sex ratios? The <code>tidyverse</code> suite of functions was used to group the “Ara samples” data by each site and then calculate a new column for the male to female ratio. Specifically, the <code>mutate</code>, <code>summarise</code>, and <code>group by</code> functions. <code>ggplot</code> was used to display the results graphically via a bar chart.</li>
 <li>Which sites have sex ratios that deviate from equal proportions of males and females at the site? The <code>ggplot</code> graph from the previous question was used to show the deviation from a perfect 1:1 ratio. A red line was applied at 1 (perfect ratio) to show which sites had an equal number of males to females.</li>
-<li>Is there a functional relationship between the habitat suitability at the sampling locations and the sex ratio? The “Ara locations” data set was used to make a <code>sf</code> object called <code>sites</code>. Then the “Suitability now” raster was read in, and the <code>extract</code> function was used to give each <code>sf</code> point in <code>sites</code> an attributed suitability value from the raster. <code>QQnorm</code> and <code>ggplot</code> graphs were used to visualize the data to determine the statistics to be ran. A <code>lm</code> was used to see if there was a relationship between <code>MFRatio ~ HabitatSuitPresent</code>. Once the model was created, the <span class="math inline">\(R^2\)</span>, <span class="math inline">\(p\)</span>-value were calculated to determine if the model was “strong” or not. A <code>kable</code> table was used to display the results.<br>
+<li>Is there a functional relationship between the habitat suitability at the sampling locations and the sex ratio? The <code>Ara locations</code> data set was used to make a <code>sf</code> object called <code>sites</code>. Then the “<code>Suitability now</code> raster was read in, and the <code>extract</code> function was used to give each <code>sf</code> point in <code>sites</code> an attributed suitability value from the raster. <code>QQnorm</code> and <code>ggplot</code> graphs were used to visualize the data to determine the statistics to be ran. A <code>lm</code> was used to see if there was a relationship between <code>MFRatio ~ HabitatSuitPresent</code>. Once the model was created, the <span class="math inline">\(R^2\)</span> and <span class="math inline">\(p\)</span>-value were calculated to determine if the model was”strong” or not. A <code>kable</code> table was used to display the results.<br>
 </li>
-<li>Does the inclusion of Phenotype A and Phenotype B improve the functional relationship over habitat suitability alone? <code>Tidyverse</code> was used again on the “Ara samples” data to create two new columns for <code>Phenotype A</code> and <code>Phenotype B</code> for each site using the <code>summarise</code> and <code>groupby</code> function. Data was visualized using <code>qqnorm</code> and <code>histograms</code> to check for normality and residual behavior. Four <code>lm</code> models were created, <code>MFRatio ~ Phenotype A</code>, <code>MFRatio ~ Phenotype B</code>, <code>MFRatio ~ Phenotype A</code> + <code>Phenotype B</code>, and <code>MFRatio ~ Phenotype A</code> + <code>Phenotype B</code> + <code>Habitat Suitability</code>. These four models were then put into a <code>data.frame</code> for further analysis where the <span class="math inline">\(R^2\)</span>, <span class="math inline">\(p\)</span>-value, <span class="math inline">\(AIC\)</span>, and <span class="math inline">\(ΔAIC\)</span> were calculated for each. Finally, the data was displayed in a <code>kable</code> table.<br>
+<li>Does the inclusion of Phenotype A and Phenotype B improve the functional relationship over habitat suitability alone? <code>Tidyverse</code> was used again on the <code>Ara samples</code> data to create two new columns, <code>Phenotype A</code> and <code>Phenotype B</code> for each site using the <code>summarise</code> and <code>groupby</code> functions. Data was visualized using <code>QQnorm</code> and <code>histograms</code> to check for normality and residual behavior. Four <code>lm</code> models were created; <code>MFRatio ~ Phenotype A</code>, <code>MFRatio ~ Phenotype B</code>, <code>MFRatio ~ Phenotype A</code> + <code>Phenotype B</code>, and <code>MFRatio ~ Phenotype A</code> + <code>Phenotype B</code> + <code>Habitat Suitability</code>. These four models were then put into a <code>data.frame</code> for further analysis where the <span class="math inline">\(R^2\)</span>, <span class="math inline">\(p\)</span>-value, <span class="math inline">\(AIC\)</span>, and <span class="math inline">\(ΔAIC\)</span> were calculated for each. Finally, the data was displayed in a <code>kable</code> table.<br>
 </li>
-<li>Has the suitability changed from 20,000 years ago? The “Suitability lmg” raster was read in to <code>extract</code> historical habitat suitability scores, and <code>sites</code> was used again to attribute the values to the 31 different sites. <code>sites</code> has the present day habitat scores already from question 3, and a <code>ggplot</code> bar graph was used to visualize the difference. Red bars represented a decrease in habitat score, and a green bar represented an increase in habitat score.<br>
+<li>Has the suitability changed from 20,000 years ago? The <code>Suitability lmg</code> raster was read in, and the <code>extract</code> function was used again to retrieve historical habitat suitability scores. The <code>sites</code> data set was used again to attribute the values to the 31 different sites. <code>sites</code> has the present day habitat scores already from question 3, and a <code>ggplot</code> bar graph was used to visualize the difference. Red bars represent a decrease in habitat score, and a green bar represent an increase in habitat score.<br>
 </li>
-<li>What was the historical sex ratio, and are there trends due to climatic changes? The <code>sites</code> data set was merged with the data set from question one containing <code>MFRatio</code>. <code>Mutate</code> was then used to calculate two new columns for <code>ΔHabitat</code> and <code>ΔMFRatio</code>. <code>ΔHabitat</code> was calculated by subtracting the historical value by the present day habitat value. <code>ΔMFRatio</code> was calculated by first using a <code>lm</code> to determine the current relationship between <code>MFRatio ~ HabitatSuitPresent + HabitatSuitHistorical</code>. Then the <code>predict</code> function was used to determine the historical <code>MFRatio</code>. <code>qqnorm</code>, <code>histogram</code>, and <code>shapiro.test</code> were used to visualize the behavior of the data and residuals to determine the correct statistical test. A <code>spearmans cor.test</code> was used to determine the significance of the relationship between <code>ΔHabitat</code> and <code>ΔMFRatio</code>. Finally, multiple <code>ggplot</code> graphs were used to visualize the differences in the historical vs present day habitat and <code>Habitat Suitability</code> and the <code>MFRatio</code> through a map overlay.</li>
+<li>What was the historical sex ratio, and are there trends due to climatic changes? The <code>sites</code> data set was merged with the data set from question one containing <code>MFRatio</code>. <code>Mutate</code> was then used to calculate two new columns named <code>ΔHabitat</code> and <code>ΔMFRatio</code>. <code>ΔHabitat</code> was calculated by subtracting the historical value from the present day habitat value. <code>ΔMFRatio</code> was calculated by first using a <code>lm</code> to determine the current relationship between <code>MFRatio ~ HabitatSuitPresent + HabitatSuitHistorical</code>. Then the <code>predict</code> function was used to determine the historical <code>MFRatio</code>. After the historical was predicted, then it was subtracted from the present day to get the change. <code>QQnorm</code>, <code>histogram</code>, and <code>shapiro.test</code> were used to visualize the behavior of the data and residuals to determine the correct statistical test. A <code>spearmans cor.test</code> was used to determine the significance of the relationship between <code>ΔHabitat</code> and <code>ΔMFRatio</code>. Finally, multiple <code>ggplot</code> graphs were used to visualize the differences in the historical vs present day <code>Habitat Suitability</code> and the <code>MFRatio</code> through a map overlay.</li>
 </ol>
 </section>
 <section id="results" class="level2">
 <h2 class="anchored" data-anchor-id="results">Results</h2>
-<p>Q1: The different sampled populations (different sites) do have different sex ratios as demonstrated by the <code>ggplot</code> below.</p>
+<p>Q1: The different sampled populations (different sites) do have different sex ratios as demonstrated by the <code>ggplot</code> below (Figure 1).</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -135,7 +142,7 @@ To help determine if a changing climate influences the sex ratio, a couple of qu
 </div>
 </div>
 <p>Figure 1. Male to female ratio at each site.</p>
-<p>Q2: Of the 31 sites, 29 sites had sex ratios that deviate from equal proportions of males and females. Sites 23 and 25 are the only two which have an equal 1:1 proportion.</p>
+<p>Q2: Of the 31 sites, 29 sites had sex ratios that deviate from equal proportions of males to females. Sites 23 and 25 are the only two which have an equal 1:1 proportion (Figure 2).</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -145,8 +152,8 @@ To help determine if a changing climate influences the sex ratio, a couple of qu
 </div>
 </div>
 </div>
-<p>Figure 2. Male to female ratio at each site, this time with a red line marking where the sex ratio is a 1:1.</p>
-<p>Q3: The <code>qqnorm</code> and <code>histogram</code> plots tell us that the data is fairly well behaved, with the residuals being majorly tight along the dotted line and the histograms are both normally distributed. This informs us that our resulting <span class="math inline">\(p\)</span>-value is valid.</p>
+<p>Figure 2. Male to female ratio at each site.</p>
+<p>Q3: The <code>QQnorm</code> and <code>histogram</code> plots tell us that the data is fairly well behaved, with the residuals being fairly tight along the dotted line, and the histograms being decently bell-curved, both indicating normal distributed. This informs us that our resulting <span class="math inline">\(p\)</span>-values are valid.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -156,12 +163,12 @@ To help determine if a changing climate influences the sex ratio, a couple of qu
 </div>
 </div>
 </div>
-<p>Figure 3. <code>qqnorm</code> plot showing the <code>lm</code> residual distribution, and <code>histograms</code> for both individual variables.</p>
-<p>The <code>kable</code> table for the <code>lm</code> of <code>MFRatio ~ HabitatSuitPresent</code> tells us that although only 16.9% of the variation of <code>MFRatio</code> is explained by <code>HabitatSuitPresent</code>, there is a significant relationship between the two variables with a <span class="math inline">\(p\)</span> = 2.15e-02.</p>
+<p>Figure 3. <code>QQnorm</code> plot showing the <code>lm</code> residual distribution, and <code>histograms</code> for both individual variables.</p>
+<p>The <code>kable</code> table for the <code>lm</code> of <code>MFRatio ~ Habitat Suitability</code> tells us that although only 16.9% of the variation of <code>MFRatio</code> is explained by <code>HabitatSuitPresent</code>, there is a significant relationship between the two variables with a <span class="math inline">\(p\)</span> = 0.0215.</p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="lightable-classic lightable-striped caption-top table table-sm table-striped small" data-quarto-postprocess="true">
-<caption>Male to Female Ratio Explained by Habitat Suitability</caption>
+<caption><strong>Male to Female Ratio Explained by Habitat Suitability<strong></strong></strong></caption>
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Model</th>
@@ -182,36 +189,36 @@ To help determine if a changing climate influences the sex ratio, a couple of qu
 </div>
 </div>
 <p>Table 1. Male to Female Ratio Explained by Habitat Suitability.</p>
-<p>Q4: The <code>qqnorm</code> and <code>histogram</code> plots tell us that <code>Phenotype A</code> and <code>Phenotype B</code>are well behaved as individual variables, with the residuals being majorly tight along the dotted line and the histograms are both normally distributed. The addition of multiple variables to the equation(s) still shows residuals that are normal for both <code>Phenotype A + Phenotype B</code>, and <code>Phenotype A + Phenotype B + Habitat Suitability</code>. Again, the normal residuals informs us that our resulting <span class="math inline">\(p\)</span>-value is valid.</p>
+<p>Q4: The <code>QQnorm</code> and <code>histogram</code> plots tell us that <code>Phenotype A</code> and <code>Phenotype B</code>are well behaved as individual variables. The residuals are decently tight along the dotted line, and the histograms being both normally distributed. The addition of multiple variables to the equations still shows residuals that are normal for both <code>Phenotype A + Phenotype B</code>, and <code>Phenotype A + Phenotype B + Habitat Suitability</code>. Again, the normal residuals informs us that our resulting <span class="math inline">\(p\)</span>-value is valid.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-10-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-11-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-10-3.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-11-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Figure 4. <code>qqnorm</code> plot showing residual distribution, and histograms for individual variable data behavior.</p>
-<p>The <code>kable</code> table below tells us that the variable with the best functional relationship is <code>Habitat Suitability</code>. <code>Habitat Suitability</code> has the only significant p-value (I.E. there is a relationship between <code>MFRatio</code> and <code>Habitat Suitability</code>) and it has the lowest <span class="math inline">\(AIC\)</span> and <span class="math inline">\(ΔAIC\)</span> values. The lowest <span class="math inline">\(AIC\)</span> value indicates the best model because that model strikes a better balance between fitting the data well and using fewer parameters (not over-fitting).</p>
+<p>Figure 4. <code>QQnorm</code> plot showing residual distribution, and histograms for individual variable data behavior.</p>
+<p>The <code>kable</code> table below tells us that the variable with the best functional relationship is <code>Habitat Suitability</code> (Table 2). <code>Habitat Suitability</code> has the only significant <span class="math inline">\(p\)</span>-value, <span class="math inline">\(p\)</span> = 0.0215, (I.E. there is a relationship between <code>MFRatio</code> and <code>Habitat Suitability</code>) and it has the lowest <span class="math inline">\(AIC\)</span>, <span class="math inline">\(AIC\)</span> = 24.687, and <span class="math inline">\(ΔAIC\)</span>, <span class="math inline">\(ΔAIC\)</span> = 0. The lowest <span class="math inline">\(AIC\)</span> value indicates the best model because that model strikes a better balance between fitting the data well and using fewer parameters (not over-fitting).</p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="lightable-classic lightable-striped caption-top table table-sm table-striped small" data-quarto-postprocess="true">
-<caption>Which Variables Best Influence Male to Female Ratio?</caption>
+<caption><strong>Which Variables Best Influence Male to Female Ratio?<strong></strong></strong></caption>
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th" style="text-align: left; font-weight: bold;">Model</th>
@@ -264,36 +271,7 @@ To help determine if a changing climate influences the sex ratio, a couple of qu
 </div>
 </div>
 <p>Table 2. Male to Female Ratio Explained by Habitat Suitability, Phenotypes, and a combination of all variables.</p>
-<p>Q5: The resulting <code>ggplot</code> shows that the change in habitat suitability differs by each site. However, 19 of the 31 sites saw a decrease in habitat suitability, while only 12 saw an increase, indicating a majority trend for a decrease in habitat suitability from 20,000 years ago.</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>Figure 5. The change in habitat suitability from site to site. Red is a negative trend and green is a positive one.</p>
-<p>Q6:</p>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
+<p>Q5: When plotting historical and present day habitat suitability, it is clear that there are in fact changes between the two time periods (Figure 5). However, it is slightly difficult to distinguish where the greatest change is occurring on this map overlay.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -302,22 +280,16 @@ To help determine if a changing climate influences the sex ratio, a couple of qu
 </figure>
 </div>
 </div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-18-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
+</div>
+</div>
+<p>Due to this, another <code>ggplot</code>, this time a <code>geom_bar</code>, was used to take a closer look at each site. 19 of the 31 sites saw a decrease in habitat suitability, while only 12 saw an increase, indicating a majority trend for a decrease in habitat suitability from 20,000 years ago. It was also apparent that there was a larger change in habitat for the decreasing sites compared to the increasing sites (Figure 6).</p>
 <div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>
-    Shapiro-Wilk normality test
-
-data:  Q6$ΔMFRatio
-W = 0.98321, p-value = 0.8944</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-    Shapiro-Wilk normality test
-
-data:  Q6$ΔHabitat
-W = 0.91525, p-value = 0.01769</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -325,21 +297,95 @@ W = 0.91525, p-value = 0.01769</code></pre>
 </figure>
 </div>
 </div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-    Spearman's rank correlation rho
-
-data:  Q6$ΔMFRatio and Q6$ΔHabitat
-S = 4706, p-value = 0.7839
-alternative hypothesis: true rho is not equal to 0
-sample estimates:
-       rho 
-0.05120968 </code></pre>
+</div>
+<p>Figure 6. The change in habitat suitability from site to site. Red is a negative trend and green is a positive one.</p>
+<p>Q6: The data tests show that the residuals of the <code>QQnorm</code> are normal, and the distribution of the newly created <code>Predicted_MFRatio_Historical</code> is also normal (Figure 7).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
 </div>
+</div>
+<p>Figure 7. The <code>QQnorm</code> contains the Model.Q6 which shows the relationship <code>MFRatio ~ HabitatSuitPresent + HabitatSuitHistorical</code>. While the <code>histogram</code> shows the distribution of the <code>Predicted Histroical MFRatio</code>.</p>
+<p>Next, the variables <code>ΔHabitat</code> and <code>ΔMFRatio</code> were displayed visually to see if there were any noticeable trends or relationships between the two variables (Figures 8+9).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Figure 8. Differences in Male to Female Ratio: Historical vs.&nbsp;Present.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Figure 9. Differences in Male to Female Ratio: Historical vs.&nbsp;Present.</p>
+<p>There were not any major trends noticed only visually, therefore statistical tests were ran to further confirm or deny this. In determining which test to run, it was found that the data behavior of <code>ΔHabitat</code> was not normal, but the <code>ΔMFRatio</code> variable was normal. Both a <code>Shapiro-Wilkes</code> and a <code>QQnorm</code> were ran on both variables. The <code>Shapiro-Wilkes</code> returned a value of <span class="math inline">\(p\)</span> = 0.8944 for <code>ΔMFRatio</code>, and <span class="math inline">\(p\)</span> = 0.0177 for <code>ΔHabitat</code>, with a significant <span class="math inline">\(p\)</span>-value of this test indicating non-normal distribution. The <code>QQnorm</code> plots also supported the <code>Shapiro-Wilkes</code> results (Figure 10).</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-25-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Figure 10. Distribution of data and residuals for <code>ΔHabitat</code> and <code>ΔMFRatio</code>.</p>
+<p>The behavior of the data resulted in a <code>Spearman's Rho</code> correlation test being ran, which resulted in a <span class="math inline">\(p\)</span> = 0.7839. This obviously is not significant, meaning there does not seem to be significant relationship between the differences in climate (habitat suitability) and the male to female ratio.</p>
 </section>
 <section id="appendix" class="level2">
 <h2 class="anchored" data-anchor-id="appendix">Appendix</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Figure 11. Correlation graph from question 3 showing the relationship between habitat suitability and male to female ratio.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Figure 12. Scatter plot showing the distributions of habitat suitability historically and presently.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="FinalExam.WrittenDoc_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Figure 13. Scatter plot showing the relationship between the ΔHabitat and the ΔMFRatio.</p>
 </section>
 
 </main>

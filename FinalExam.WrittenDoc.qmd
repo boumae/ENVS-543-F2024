@@ -1,8 +1,8 @@
 ---
-title: "Final.Exam.WrittenDoc"
+title: "Final Exam Written Document"
 author: "Eric Bouma"
 format: html
-editor: visual
+date: 12/16/24
 ---
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
@@ -30,19 +30,19 @@ The Sonora Desert bark beetle, *Araptus attenuatus*, is a tiny beetle that is fo
 
 ## Methods
 
-The data sets used include a .CSV file (Ara Locations) of point locations for all 31 sampling sites, a .CSV (Ara Samples) of the raw characteristic beetle data for all 31 sites, a GeoTIFF (Suitability now) raster of estimated habitat suitability index, and a .ASC (Suitability lmg) raster of historical estimates for habitat suitability during the last glacial maximum.   
+The data sets used include a .CSV file (`Ara Locations`) of point locations for all 31 sampling sites, a .CSV (`Ara Samples`) of the raw characteristic beetle data for all 31 sites, a GeoTIFF (`Suitability now`) raster of estimated habitat suitability index, and a .ASC (`Suitability lmg`) raster of historical estimates for habitat suitability during the last glacial maximum.   
 To help determine if a changing climate influences the sex ratio, a couple of questions need to be answered:
 
 1) Do sampled populations of the beetle have different sex ratios? The `tidyverse` suite of functions was used to group the "Ara samples" data by each site and then calculate a new column for the male to female ratio. Specifically, the `mutate`, `summarise`, and `group by` functions. `ggplot` was used to display the results graphically via a bar chart. 
 2) Which sites have sex ratios that deviate from equal proportions of males and females at the site? The `ggplot` graph from the previous question was used to show the deviation from a perfect 1:1 ratio. A red line was applied at 1 (perfect ratio) to show which sites had an equal number of males to females. 
-3) Is there a functional relationship between the habitat suitability at the sampling locations and the sex ratio? The "Ara locations" data set was used to make a `sf` object called `sites`. Then the "Suitability now" raster was read in, and the `extract` function was used to give each `sf` point in `sites` an attributed suitability value from the raster. `QQnorm` and `ggplot` graphs were used to visualize the data to determine the statistics to be ran. A `lm` was used to see if there was a relationship between `MFRatio ~ HabitatSuitPresent`. Once the model was created, the $R^2$, $p$-value were calculated to determine if the model was "strong" or not. A `kable` table was used to display the results.   
-4) Does the inclusion of Phenotype A and Phenotype B improve the functional relationship over habitat suitability alone? `Tidyverse` was used again on the "Ara samples" data to create two new columns for `Phenotype A` and `Phenotype B` for each site using the `summarise` and `groupby` function. Data was visualized using `qqnorm` and `histograms` to check for normality and residual behavior. Four `lm` models were created, `MFRatio ~ Phenotype A`, `MFRatio ~ Phenotype B`, `MFRatio ~ Phenotype A` + `Phenotype B`, and `MFRatio ~ Phenotype A` + `Phenotype B` + `Habitat Suitability`. These four models were then put into a `data.frame` for further analysis where the $R^2$, $p$-value, $AIC$, and $ΔAIC$ were calculated for each. Finally, the data was displayed in a `kable` table.  
-5) Has the suitability changed from 20,000 years ago? The "Suitability lmg" raster was read in to `extract` historical habitat suitability scores, and `sites` was used again to attribute the values to the 31 different sites. `sites`  has the present day habitat scores already from question 3, and a `ggplot` bar graph was used to visualize the difference. Red bars represented a decrease in habitat score, and a green bar represented an increase in habitat score.  
-6) What was the historical sex ratio, and are there trends due to climatic changes? The `sites` data set was merged with the data set from question one containing `MFRatio`. `Mutate` was then used to calculate two new columns for `ΔHabitat` and `ΔMFRatio`. `ΔHabitat` was calculated by subtracting the historical value by the present day habitat value. `ΔMFRatio` was calculated by first using a `lm` to determine the current relationship between `MFRatio ~ HabitatSuitPresent + HabitatSuitHistorical`. Then the `predict` function was used to determine the historical `MFRatio`. `qqnorm`, `histogram`, and `shapiro.test` were used to visualize the behavior of the data and residuals to determine the correct statistical test. A `spearmans cor.test` was used to determine the significance of the relationship between `ΔHabitat` and `ΔMFRatio`. Finally, multiple `ggplot` graphs were used to visualize the differences in the historical vs present day habitat and `Habitat Suitability` and the `MFRatio` through a map overlay. 
+3) Is there a functional relationship between the habitat suitability at the sampling locations and the sex ratio? The `Ara locations` data set was used to make a `sf` object called `sites`. Then the "`Suitability now` raster was read in, and the `extract` function was used to give each `sf` point in `sites` an attributed suitability value from the raster. `QQnorm` and `ggplot` graphs were used to visualize the data to determine the statistics to be ran. A `lm` was used to see if there was a relationship between `MFRatio ~ HabitatSuitPresent`. Once the model was created, the $R^2$ and $p$-value were calculated to determine if the model was "strong" or not. A `kable` table was used to display the results.   
+4) Does the inclusion of Phenotype A and Phenotype B improve the functional relationship over habitat suitability alone? `Tidyverse` was used again on the `Ara samples` data to create two new columns, `Phenotype A` and `Phenotype B` for each site using the `summarise` and `groupby` functions. Data was visualized using `QQnorm` and `histograms` to check for normality and residual behavior. Four `lm` models were created; `MFRatio ~ Phenotype A`, `MFRatio ~ Phenotype B`, `MFRatio ~ Phenotype A` + `Phenotype B`, and `MFRatio ~ Phenotype A` + `Phenotype B` + `Habitat Suitability`. These four models were then put into a `data.frame` for further analysis where the $R^2$, $p$-value, $AIC$, and $ΔAIC$ were calculated for each. Finally, the data was displayed in a `kable` table.  
+5) Has the suitability changed from 20,000 years ago? The `Suitability lmg` raster was read in, and the `extract` function was used again to retrieve historical habitat suitability scores. The `sites` data set was used again to attribute the values to the 31 different sites. `sites`  has the present day habitat scores already from question 3, and a `ggplot` bar graph was used to visualize the difference. Red bars represent a decrease in habitat score, and a green bar represent an increase in habitat score.  
+6) What was the historical sex ratio, and are there trends due to climatic changes? The `sites` data set was merged with the data set from question one containing `MFRatio`. `Mutate` was then used to calculate two new columns named `ΔHabitat` and `ΔMFRatio`. `ΔHabitat` was calculated by subtracting the historical value from the present day habitat value. `ΔMFRatio` was calculated by first using a `lm` to determine the current relationship between `MFRatio ~ HabitatSuitPresent + HabitatSuitHistorical`. Then the `predict` function was used to determine the historical `MFRatio`. After the historical was predicted, then it was subtracted from the present day to get the change. `QQnorm`, `histogram`, and `shapiro.test` were used to visualize the behavior of the data and residuals to determine the correct statistical test. A `spearmans cor.test` was used to determine the significance of the relationship between `ΔHabitat` and `ΔMFRatio`. Finally, multiple `ggplot` graphs were used to visualize the differences in the historical vs present day `Habitat Suitability` and the `MFRatio` through a map overlay. 
 
 ## Results
 
-Q1: The different sampled populations (different sites) do have different sex ratios as demonstrated by the `ggplot` below. 
+Q1: The different sampled populations (different sites) do have different sex ratios as demonstrated by the `ggplot` below (Figure 1). 
 ```{r, echo=FALSE}
 
 ara.samples |>
@@ -73,7 +73,7 @@ Q1 |>
 ```
 Figure 1. Male to female ratio at each site.
 
-Q2: Of the 31 sites, 29 sites had sex ratios that deviate from equal proportions of males and females. Sites 23 and 25 are the only two which have an equal 1:1 proportion.
+Q2: Of the 31 sites, 29 sites had sex ratios that deviate from equal proportions of males to females. Sites 23 and 25 are the only two which have an equal 1:1 proportion (Figure 2).
 ```{r, echo=FALSE, warning=FALSE}
 
 Q1 |>
@@ -89,9 +89,9 @@ Q1 |>
 
 
 ```
-Figure 2. Male to female ratio at each site, this time with a red line marking where the sex ratio is a 1:1.  
+Figure 2. Male to female ratio at each site.
 
-Q3: The `qqnorm` and `histogram` plots tell us that the data is fairly well behaved, with the residuals being majorly tight along the dotted line and the histograms are both normally distributed. This informs us that our resulting $p$-value is valid. 
+Q3: The `QQnorm` and `histogram` plots tell us that the data is fairly well behaved, with the residuals being fairly tight along the dotted line, and the histograms being decently bell-curved, both indicating normal distributed. This informs us that our resulting $p$-values are valid. 
 ```{r, echo=FALSE, message=FALSE}
 
 library(raster)
@@ -138,9 +138,14 @@ hist(Q3$HabitatSuitPresent, main = "Present Day Habitat Suitability")
 par(mfrow = c(1,1))
 
 ```
-Figure 3. `qqnorm` plot showing the `lm` residual distribution, and `histograms` for both individual variables. 
+Figure 3. `QQnorm` plot showing the `lm` residual distribution, and `histograms` for both individual variables. 
+```{r, echo=FALSE}
+data.frame( Model = c("Male to Female Ratio ~ Habitat Suitability"),
+            R2 = c(summary(fit.ratio)$r.squared),
+            P = c( get_pval( fit.ratio) )) -> df.models.Q3
+```
 
-The `kable` table for the `lm` of `MFRatio ~ HabitatSuitPresent` tells us that although only 16.9% of the variation of `MFRatio ` is explained by `HabitatSuitPresent`, there is a significant relationship between the two variables with a $p$ = 2.15e-02.
+The `kable` table for the `lm` of `MFRatio ~ Habitat Suitability` tells us that although only `r round(df.models.Q3$R2 *100, 1)`% of the variation of `MFRatio ` is explained by `HabitatSuitPresent`, there is a significant relationship between the two variables with a $p$ = `r round(df.models.Q3$P,4)`.
 ```{r, echo=FALSE}
 data.frame( Model = c("Male to Female Ratio ~ Habitat Suitability"),
             R2 = c(summary(fit.ratio)$r.squared),
@@ -149,7 +154,7 @@ data.frame( Model = c("Male to Female Ratio ~ Habitat Suitability"),
 df.models.Q3 |>
   arrange( -R2 ) |>
   mutate( P = format( P, scientific=TRUE, digits=3)) |>
-  kable( caption = "Male to Female Ratio Explained by Habitat Suitability",
+  kable( caption = "<b>Male to Female Ratio Explained by Habitat Suitability<b>",
          digits = 3) |>
    kable_classic( full_width = FALSE,
                  lightable_options = "striped") |>
@@ -157,7 +162,7 @@ df.models.Q3 |>
 ```
 Table 1. Male to Female Ratio Explained by Habitat Suitability.
 
-Q4: The `qqnorm` and `histogram` plots tell us that `Phenotype A` and `Phenotype B`are well behaved as individual variables, with the residuals being majorly tight along the dotted line and the histograms are both normally distributed. The addition of multiple variables to the equation(s) still shows residuals that are normal for both `Phenotype A + Phenotype B`, and `Phenotype A + Phenotype B + Habitat Suitability`. Again, the normal residuals informs us that our resulting $p$-value is valid. 
+Q4: The `QQnorm` and `histogram` plots tell us that `Phenotype A` and `Phenotype B`are well behaved as individual variables. The residuals are decently tight along the dotted line, and the histograms being both normally distributed. The addition of multiple variables to the equations still shows residuals that are normal for both `Phenotype A + Phenotype B`, and `Phenotype A + Phenotype B + Habitat Suitability`. Again, the normal residuals informs us that our resulting $p$-value is valid. 
 ```{r, echo=FALSE}
 #data wrangle 
 ara.samples |>
@@ -188,7 +193,7 @@ par(mfrow = c(1,1))
 
 
 ```
-Figure 4. `qqnorm` plot showing residual distribution, and histograms for individual variable data behavior.
+Figure 4. `QQnorm` plot showing residual distribution, and histograms for individual variable data behavior.
 ```{r, echo=FALSE}
 
 data.frame( Model = c("Male to Female Ratio ~ Habitat Suitability",
@@ -247,7 +252,7 @@ models.aic$ΔAIC <- models.aic$AIC - min_AIC
 
 ```
 
-The `kable` table below tells us that the variable with the best functional relationship is `Habitat Suitability`. `Habitat Suitability` has the only significant p-value (I.E. there is a relationship between `MFRatio` and `Habitat Suitability`) and it has the lowest $AIC$ and $ΔAIC$ values. The lowest $AIC$ value indicates the best model because that model strikes a better balance between fitting the data well and using fewer parameters (not over-fitting).
+The `kable` table below tells us that the variable with the best functional relationship is `Habitat Suitability` (Table 2). `Habitat Suitability` has the only significant $p$-value, $p$ = `r round(models.aic[1,"P"],4)`, (I.E. there is a relationship between `MFRatio` and `Habitat Suitability`) and it has the lowest $AIC$, $AIC$ = `r round(models.aic[1,"AIC"],3)`, and $ΔAIC$, $ΔAIC$ = `r models.aic[1,"ΔAIC"]`. The lowest $AIC$ value indicates the best model because that model strikes a better balance between fitting the data well and using fewer parameters (not over-fitting).
 ```{r, echo=FALSE}
 
 models.aic |>
@@ -255,7 +260,7 @@ models.aic |>
           - model) |>
   arrange( AIC ) |>
   mutate( P = format( P, scientific=TRUE, digits=3)) |>
-  kable( caption = "Which Variables Best Influence Male to Female Ratio?",
+  kable( caption = "<b>Which Variables Best Influence Male to Female Ratio?<b>",
          digits = 3) |>
    kable_classic( full_width = FALSE,
                  lightable_options = "striped") |>
@@ -264,7 +269,7 @@ models.aic |>
 ```
 Table 2. Male to Female Ratio Explained by Habitat Suitability, Phenotypes, and a combination of all variables. 
 
-Q5: The resulting `ggplot` shows that the change in habitat suitability differs by each site. However, 19 of the 31 sites saw a decrease in habitat suitability, while only 12 saw an increase, indicating a majority trend for a decrease in habitat suitability from 20,000 years ago.
+Q5: When plotting historical and present day habitat suitability, it is clear that there are in fact changes between the two time periods (Figure 5). However, it is slightly difficult to distinguish where the greatest change is occurring on this map overlay.   
 ```{r, echo=FALSE}
 
 #read in raster
@@ -276,6 +281,12 @@ r2.utm <- projectRaster(r2, crs = new.proj)
 extract( r2.utm, sites) -> habitat_score2
 
 sites$HabitatSuitHistorical <- habitat_score2
+
+#change data format for easier visualization
+sites_long <- pivot_longer(sites, 
+                          cols = c("HabitatSuitHistorical", "HabitatSuitPresent"),
+                          names_to = "Time_Period",
+                          values_to = "Habitat_Suitability")
 
 ```
 
@@ -300,20 +311,96 @@ Q6|>
 
 ```{r, echo=FALSE}
 
+map_data("world") |>
+  filter( region == "Mexico") -> map
+
+min_value.P <- min(Q6$HabitatSuitPresent, na.rm = TRUE)
+max_value.P <- max(Q6$HabitatSuitPresent, na.rm = TRUE)
+min_value.H <- min(Q6$HabitatSuitHistorical, na.rm = TRUE)
+max_value.H <- max(Q6$HabitatSuitHistorical, na.rm = TRUE)
+
+ggplot(Q6) +
+  geom_polygon( aes( x=long, 
+                     y=lat, 
+                     group=group ), 
+                data=map, 
+                fill="grey" ) +
+  geom_sf(aes(color = HabitatSuitPresent), size = 3) +
+  scale_color_gradient2(midpoint = 0, low = "blue", high = "red", mid = "white",
+                        limits = c(min_value.P, max_value.H)) +
+  labs(title = "Present Habitat Suitability",
+       color = "Suitability",
+       x = "Latitude",
+       y = "Longitude") +
+ theme_bw( base_size = 12 )  +
+  theme(legend.position = "right")  +
+  coord_sf( xlim = c(-115, -106),
+            ylim = c(22, 30) ) +
+  geom_sf_text(aes(label = SiteNum), size = 2.5, color = "black") -> Q5.map.P
+
+```
+
+```{r, echo=FALSE, warning=FALSE}
+
+ggplot(Q6) +
+  geom_polygon( aes( x=long, 
+                     y=lat, 
+                     group=group ), 
+                data=map, 
+                fill="grey" ) +
+  geom_sf(aes(color = HabitatSuitHistorical), size = 3) +
+  scale_color_gradient2(midpoint = 0, low = "blue", high = "red", mid = "white",
+                        limits = c(min_value.P, max_value.H)) +  
+  labs(title = "Historical Habitat Suitability",
+       color = "Suitability",
+       x = "Latitude",
+       y = "Longitude") +
+ theme_bw( base_size = 12 )  +
+  theme(legend.position = "right")  +
+  coord_sf( xlim = c(-115, -106),
+            ylim = c(22, 30) ) +
+  geom_sf_text(aes(label = SiteNum), size = 2.5, color = "black") -> Q5.map.H
+```
+
+```{r, echo=FALSE, warning=FALSE}
+par(mfrow = c(1,2))
+plot(Q5.map.P)
+plot(Q5.map.H)
+par(mfrow = c(1,1))
+```
+Due to this, another `ggplot`, this time a `geom_bar`, was used to take a closer look at each site. 19 of the 31 sites saw a decrease in habitat suitability, while only 12 saw an increase, indicating a majority trend for a decrease in habitat suitability from 20,000 years ago. It was also apparent that there was a larger change in habitat for the decreasing sites compared to the increasing sites (Figure 6).
+```{r, echo=FALSE}
+
 ggplot(Q6, aes(x = factor(SiteNum), y = ΔHabitat, fill = ΔHabitat > 0)) +  
   geom_bar(stat = "identity", color = "black") +  # Create bars with black border
   scale_fill_manual(values = c("red", "green")) +  # Set red for negative and green for positive
   labs(
-    title = "Change in Habitat by Site", 
+    title = "Change in Habitat Suitability by Site", 
     x = "Site", 
     y = "Change in Habitat"
   ) + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
-Figure 5. The change in habitat suitability from site to site. Red is a negative trend and green is a positive one.
+Figure 6. The change in habitat suitability from site to site. Red is a negative trend and green is a positive one.
 
-Q6:
+```{r, echo=FALSE, message=FALSE}
+
+#S-W normaility test
+shapiro.test( Q6$ΔMFRatio) -> Shap.Ratio
+shapiro.test( Q6$ΔHabitat) -> Shap.Hab
+
+```
+
+```{r, echo=FALSE}
+
+#cor test for non normal data
+cor.test( Q6$ΔMFRatio, Q6$ΔHabitat, method = "spearman" ) -> Q6.cor.test
+
+
+```
+
+Q6: The data tests show that the residuals of the `QQnorm` are normal, and the distribution of the newly created `Predicted_MFRatio_Historical` is also normal (Figure 7).      
 ```{r, echo=FALSE}
 
 par(mfrow = c(1,2))
@@ -322,11 +409,10 @@ hist(Q6$Predicted_MFRatio_Historical, main = "Predicted Histroical MFRatio Q-Q")
 par(mfrow = c(1,1))
 
 ```
-Figure 6. The `qqnorm` contains the Model.Q6 which shows the relationship `MFRatio ~ HabitatSuitPresent + HabitatSuitHistorical`. While the `histogram` shows the distribution of the `Predicted Histroical MFRatio`. 
-```{r, echo=FALSE}
+Figure 7. The `QQnorm` contains the Model.Q6 which shows the relationship `MFRatio ~ HabitatSuitPresent + HabitatSuitHistorical`. While the `histogram` shows the distribution of the `Predicted Histroical MFRatio`. 
 
-map_data("world") |>
-  filter( region == "Mexico") -> map
+Next, the variables `ΔHabitat` and `ΔMFRatio` were displayed visually to see if there were any noticeable trends or relationships between the two variables (Figures 8+9).  
+```{r, echo=FALSE}
 
 ggplot(Q6) +
   geom_polygon( aes( x=long, 
@@ -337,14 +423,16 @@ ggplot(Q6) +
   geom_sf(aes(color = ΔMFRatio), size = 3) +  # Color by MFR Difference
   scale_color_gradient2(midpoint = 0, low = "blue", high = "red", mid = "white") +  # Blue for decrease, red for increase
   labs(title = "Differences in Male to Female Ratio: Historical vs. Present",
-       color = "MFR Difference") +
+       color = "MFR Difference",
+       x = "Latitude",
+       y = "Longitude") +
  theme_bw( base_size = 12 )  +
   theme(legend.position = "right")  +
   coord_sf( xlim = c(-115, -106),
             ylim = c(22, 30) )
 
 ```
-Figure 7. Differences in Male to Female Ratio: Historical vs. Present.
+Figure 8. Differences in Male to Female Ratio: Historical vs. Present.
 ```{r, echo=FALSE}
 
 ggplot(Q6) +
@@ -355,42 +443,73 @@ ggplot(Q6) +
                 fill="grey" ) +
   geom_sf(aes(color = ΔHabitat), size = 3) +  # Color by MFR Difference
   scale_color_gradient2(midpoint = 0, low = "blue", high = "red", mid = "white") +  # Blue for decrease, red for increase
-  labs(title = "Differences in Male to Female Ratio: Historical vs. Present",
-       color = "Habitat Difference") +
+  labs(title = "Differences in Habitat Suitability: Historical vs. Present",
+       color = "Habitat Difference",
+       x = "Latitude",
+       y = "Longitude") +
  theme_bw( base_size = 12 )  +
   theme(legend.position = "right")  +
   coord_sf( xlim = c(-115, -106),
             ylim = c(22, 30) )
 
 ```
-Figure 8. Differences in Male to Female Ratio: Historical vs. Present.
-```{r, echo=FALSE}
+Figure 9. Differences in Male to Female Ratio: Historical vs. Present.
 
-#S-W normaility test
-shapiro.test( Q6$ΔMFRatio)
-shapiro.test( Q6$ΔHabitat)
-
-```
-
+There were not any major trends noticed only visually, therefore statistical tests were ran to further confirm or deny this. In determining which test to run, it was found that the data behavior of `ΔHabitat` was not normal, but the `ΔMFRatio` variable was normal. Both a `Shapiro-Wilkes` and a `QQnorm` were ran on both variables. The `Shapiro-Wilkes` returned a value of $p$ = `r round(Shap.Ratio$p.value, 4)` for `ΔMFRatio`, and $p$ = `r round(Shap.Hab$p.value, 4)` for `ΔHabitat`, with a significant $p$-value of this test indicating non-normal distribution. The `QQnorm` plots also supported the `Shapiro-Wilkes` results (Figure 10). 
 ```{r, echo=FALSE}
 
 #Visual normality test
 par(mfrow = c(1,2))
 qqnorm(Q6$ΔHabitat, main = "ΔHabitat")
 qqline(Q6$ΔHabitat, col = "red")
+hist(Q6$ΔHabitat, main = "ΔHabitat")
 qqnorm(Q6$ΔMFRatio, main = "ΔMFRatio")
 qqline(Q6$ΔMFRatio, col = "red")
+hist(Q6$ΔMFRatio, main = "ΔMFRatio")
 par(mfrow = c(1,1))
 
 ```
+Figure 10. Distribution of data and residuals for `ΔHabitat` and `ΔMFRatio`.
+
+The behavior of the data resulted in a `Spearman's Rho` correlation test being ran, which resulted in a $p$ = `r round(Q6.cor.test$p.value, 4)`. This obviously is not significant, meaning there does not seem to be significant relationship between the differences in climate (habitat suitability) and the male to female ratio.
+
+## Appendix
 
 ```{r, echo=FALSE}
 
-#cor test for non normal data
-cor.test( Q6$ΔMFRatio, Q6$ΔHabitat, method = "spearman" ) -> Q6.cor.test
-Q6.cor.test
+ggplot( Q3, aes( HabitatSuitPresent,
+                      MFRatio)) +
+      labs ( title = "Relationship Between Habitat Suitability and the Ratio of Male to Female Beetles",
+             x = "Habitat Suitability",
+             y = "Ratio of Male to Female") +
+    stat_smooth( formula = y ~ x,
+               method = "lm",
+               alpha = 1) +
+  geom_point( col = "red")
 
 ```
+Figure 11. Correlation graph from question 3 showing the relationship between habitat suitability and male to female ratio.
+
+```{r, echo=FALSE}
+
+ggplot(sites_long, aes(x = Time_Period, y = Habitat_Suitability)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Habitat Suitability by Time Period",
+       x = "Time Period", y = "Habitat Suitability")
 
 
-## Appendix
+```
+Figure 12. Scatter plot showing the distributions of habitat suitability historically and presently.
+
+```{r, echo=FALSE}
+
+ggplot(Q6, aes(x = ΔHabitat, y = ΔMFRatio )) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "red") +  # Add regression line
+  labs(title = "Change in MFR vs. Change in Habitat Suitability",
+       x = "Change in Habitat Suitability",
+       y = "Change in MFR")
+
+
+```
+Figure 13. Scatter plot showing the relationship between the ΔHabitat and the ΔMFRatio.
