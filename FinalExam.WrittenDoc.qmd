@@ -368,7 +368,7 @@ plot(Q5.map.P)
 plot(Q5.map.H)
 par(mfrow = c(1,1))
 ```
-Figure 5. Map overlays of present day (top) and historical (bottom) habitat suitability
+Figure 5. Map overlays of present day (top) and historical (bottom) habitat suitability.
 
 Due to this, another `ggplot`, this time a `geom_bar`, was used to take a closer look at each site. 19 of the 31 sites saw a decrease in habitat suitability, while only 12 saw an increase, indicating a majority trend for a decrease in habitat suitability from 20,000 years ago. It was also apparent that there was a larger change in habitat for the decreasing sites compared to the increasing sites (Figure 6).
 ```{r, echo=FALSE}
